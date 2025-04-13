@@ -3,9 +3,10 @@ package com.cre.springbootinit.aop;
 import com.cre.springbootinit.annotation.AuthCheck;
 import com.cre.springbootinit.common.ErrorCode;
 import com.cre.springbootinit.exception.BusinessException;
-import com.cre.springbootinit.model.entity.User;
 import com.cre.springbootinit.model.enums.UserRoleEnum;
+import com.cre.springbootinit.model.vo.UserVo;
 import com.cre.springbootinit.service.UserService;
+import com.cre.springbootinit.utils.ThreadLocalUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.util.Map;
 
 /**
  * 权限校验 AOP
@@ -40,14 +43,16 @@ public class AuthCheckAspect {
         RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
         HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
         // 当前登录用户
-        User loginUser = userService.getLoginUser(request);
+        Map<String, Object> map = ThreadLocalUtil.get();
+        String userAccount = (String) map.get("userAccount");
+        UserVo userVo = userService.getUserInfoByAccount(userAccount);
         // 必须有该权限才通过
         if (StringUtils.isNotBlank(mustRole)) {
             UserRoleEnum mustUserRoleEnum = UserRoleEnum.getEnumByValue(mustRole);
             if (mustUserRoleEnum == null) {
                 throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
             }
-            String userRole = loginUser.getUserRole();
+            String userRole = userVo.getUserRole();
             // 必须有管理员权限
             if (UserRoleEnum.ADMIN.equals(mustUserRoleEnum)) {
                 if (!mustRole.equals(userRole)) {

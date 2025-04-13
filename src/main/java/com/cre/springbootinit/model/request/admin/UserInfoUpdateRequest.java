@@ -7,13 +7,13 @@ import java.io.Serial;
 import java.io.Serializable;
 
 @Data
-public class UpdateUserInfoRequest implements Serializable {
+public class UserInfoUpdateRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     /**
      * 用户id
      */
-    private Integer id;
+    private Long id;
     /**
      * 用户账号
      */

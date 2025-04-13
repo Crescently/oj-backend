@@ -12,16 +12,15 @@ import com.cre.springbootinit.exception.BusinessException;
 import com.cre.springbootinit.mapper.UserMapper;
 import com.cre.springbootinit.model.entity.User;
 import com.cre.springbootinit.model.enums.UserRoleEnum;
-import com.cre.springbootinit.model.request.admin.UpdateUserInfoRequest;
-import com.cre.springbootinit.model.request.admin.UpdateUserRoleRequest;
 import com.cre.springbootinit.model.request.admin.UserAddRequest;
+import com.cre.springbootinit.model.request.admin.UserInfoUpdateRequest;
 import com.cre.springbootinit.model.request.admin.UserQueryRequest;
+import com.cre.springbootinit.model.request.admin.UserRoleUpdateRequest;
 import com.cre.springbootinit.model.request.user.UserRegisterRequest;
 import com.cre.springbootinit.model.request.user.UserUpdateInfoRequest;
 import com.cre.springbootinit.model.request.user.UserUpdatePwdRequest;
-import com.cre.springbootinit.model.response.admin.ListUserInfoResponse;
-import com.cre.springbootinit.model.response.user.UserInfoResponse;
 import com.cre.springbootinit.model.response.user.UserLoginResponse;
+import com.cre.springbootinit.model.vo.UserVo;
 import com.cre.springbootinit.service.UserService;
 import com.cre.springbootinit.utils.*;
 import com.github.pagehelper.Page;
@@ -53,7 +52,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private StringRedisTemplate stringRedisTemplate;
 
     @Override
-    public UserInfoResponse getUserInfoByAccount(String userAccount) {
+    public UserVo getUserInfoByAccount(String userAccount) {
         // 查询数据库，根据用户名获取用户信息
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("user_account", userAccount);
@@ -61,10 +60,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user == null) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, MessageConstant.USERNAME_NOT_EXIST);
         }
-
-        UserInfoResponse userInfoResponse = new UserInfoResponse();
-        BeanUtils.copyProperties(user, userInfoResponse);
-        return userInfoResponse;
+        UserVo userVo = new UserVo();
+        BeanUtils.copyProperties(user, userVo);
+        return userVo;
     }
 
     @Override
@@ -144,32 +142,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return true;
     }
 
-    /**
-     * 获取当前登录用户
-     *
-     * @param request
-     * @return
-     */
-    @Override
-    public User getLoginUser(HttpServletRequest request) {
-        // 先判断是否已登录
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
-        if (currentUser == null || currentUser.getId() == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        // 从数据库查询（追求性能的话可以注释，直接走缓存）
-        long userId = currentUser.getId();
-        currentUser = this.getById(userId);
-        if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        return currentUser;
-    }
 
     @Override
-    public PageBean<ListUserInfoResponse> listUserByPage(UserQueryRequest userQueryRequest) {
-        PageBean<ListUserInfoResponse> userPageBean = new PageBean<>();
+    public PageBean<UserVo> listUserByPage(UserQueryRequest userQueryRequest) {
+        PageBean<UserVo> userPageBean = new PageBean<>();
         String userAccount = userQueryRequest.getUserAccount();
         String username = userQueryRequest.getUsername();
         String userRole = userQueryRequest.getUserRole();
@@ -187,7 +163,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         List<User> userList = userMapper.selectList(queryWrapper);
         Page<User> userPage = (Page<User>) userList;
 
-        List<ListUserInfoResponse> responseList = BeanUtil.copyToList(userList, ListUserInfoResponse.class);
+        List<UserVo> responseList = BeanUtil.copyToList(userList, UserVo.class);
 
         userPageBean.setTotal(userPage.getTotal());
         userPageBean.setItems(responseList);
@@ -208,9 +184,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public void updateUser(UpdateUserInfoRequest updateUserInfoRequest) {
-        Integer id = updateUserInfoRequest.getId();
-        User user = User.builder().username(updateUserInfoRequest.getUsername()).userAccount(updateUserInfoRequest.getUserAccount()).userEmail(updateUserInfoRequest.getUserEmail()).description(updateUserInfoRequest.getDescription()).userRole(updateUserInfoRequest.getUserRole()).build();
+    public void updateUser(UserInfoUpdateRequest userInfoUpdateRequest) {
+        Long id = userInfoUpdateRequest.getId();
+        User user = User.builder().username(userInfoUpdateRequest.getUsername()).userAccount(userInfoUpdateRequest.getUserAccount()).userEmail(userInfoUpdateRequest.getUserEmail()).description(userInfoUpdateRequest.getDescription()).userRole(userInfoUpdateRequest.getUserRole()).build();
 
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("id", id);
@@ -220,9 +196,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
 
     @Override
-    public void updateUserRole(UpdateUserRoleRequest updateUserRoleRequest) {
-        String userAccount = updateUserRoleRequest.getUserAccount();
-        String newUserRole = updateUserRoleRequest.getNewUserRole();
+    public void updateUserRole(UserRoleUpdateRequest userRoleUpdateRequest) {
+        String userAccount = userRoleUpdateRequest.getUserAccount();
+        String newUserRole = userRoleUpdateRequest.getNewUserRole();
 
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("user_account", userAccount);
@@ -234,8 +210,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void updateUserInfo(UserUpdateInfoRequest userUpdateInfoRequest) {
-        Map<String, Object> map = ThreadLocalUtil.get();
-        Integer id = (Integer) map.get("id");
+        Long id = LoginUserInfoUtil.getUserId();
         User user = User.builder().id(id).username(userUpdateInfoRequest.getUsername()).userEmail(userUpdateInfoRequest.getUserEmail()).build();
         userMapper.update(user, new QueryWrapper<User>().eq("id", id));
     }

@@ -8,8 +8,8 @@ import com.cre.springbootinit.model.request.user.UserLoginRequest;
 import com.cre.springbootinit.model.request.user.UserRegisterRequest;
 import com.cre.springbootinit.model.request.user.UserUpdateInfoRequest;
 import com.cre.springbootinit.model.request.user.UserUpdatePwdRequest;
-import com.cre.springbootinit.model.response.user.UserInfoResponse;
 import com.cre.springbootinit.model.response.user.UserLoginResponse;
+import com.cre.springbootinit.model.vo.UserVo;
 import com.cre.springbootinit.service.UserService;
 import com.cre.springbootinit.utils.ThreadLocalUtil;
 import jakarta.annotation.Resource;
@@ -47,7 +47,6 @@ public class UserController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
-        log.info("用户注册，用户名：{}，密码：{}", userRegisterRequest.getUserAccount(), userRegisterRequest.getUserPassword());
         userService.register(userRegisterRequest);
         return BaseResponse.success();
     }
@@ -67,11 +66,10 @@ public class UserController {
         String userPassword = userLoginRequest.getUserPassword();
 
         // 判断用户是否处于封禁状态
-        UserInfoResponse userinfo = userService.getUserInfoByAccount(userAccount);
+        UserVo userinfo = userService.getUserInfoByAccount(userAccount);
         if (Objects.equals(userinfo.getUserRole(), UserRoleEnum.BAN.getValue())) {
             throw new BusinessException(ErrorCode.FORBIDDEN_ERROR);
         }
-        log.info("用户登录，用户账号：{}，密码：{}", userAccount, userPassword);
         UserLoginResponse userLoginResponse = userService.login(userAccount, userPassword, request);
         return BaseResponse.success(userLoginResponse);
     }
@@ -101,14 +99,12 @@ public class UserController {
      * @return 用户信息
      */
     @GetMapping("/userInfo")
-    public BaseResponse<UserInfoResponse> getUserInfo() {
-        // 使用ThreadLocal获取用户名
+    public BaseResponse<UserVo> getUserInfo() {
         Map<String, Object> map = ThreadLocalUtil.get();
         String userAccount = (String) map.get("userAccount");
-        log.info("当前登录的用户账号：{}", userAccount);
         // 2.查询数据库
-        UserInfoResponse userInfoResponse = userService.getUserInfoByAccount(userAccount);
-        return BaseResponse.success(userInfoResponse);
+        UserVo userVo = userService.getUserInfoByAccount(userAccount);
+        return BaseResponse.success(userVo);
     }
 
     /**
@@ -119,7 +115,6 @@ public class UserController {
      */
     @PutMapping("/update")
     public BaseResponse updateUserInfo(@RequestBody @Validated UserUpdateInfoRequest userUpdateInfoRequest) {
-        log.info("用户信息更新");
         userService.updateUserInfo(userUpdateInfoRequest);
         return BaseResponse.success();
     }
@@ -131,7 +126,6 @@ public class UserController {
      */
     @PatchMapping("/updateAvatar")
     public BaseResponse updateAvatar(@RequestParam @URL String avatarUrl) {
-        log.info("更新头像");
         userService.updateAvatar(avatarUrl);
         return BaseResponse.success();
     }
@@ -145,7 +139,6 @@ public class UserController {
     @PatchMapping("/updatePwd")
     public BaseResponse updatePassword(@RequestBody UserUpdatePwdRequest userUpdatePwdRequest, HttpServletRequest request) {
         String token = request.getHeader("Authorization");
-        log.info("更新密码");
         userService.updatePassword(userUpdatePwdRequest);
         // 删除redis中的token
         ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();

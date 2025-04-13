@@ -1,7 +1,5 @@
-package com.cre.springbootinit.model.response.admin;
+package com.cre.springbootinit.model.vo;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -10,14 +8,16 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-public class ListUserInfoResponse implements Serializable {
+public class UserVo implements Serializable {
+
     @Serial
     private static final long serialVersionUID = 1L;
+
 
     /**
      * 主键ID
      */
-    private Integer id;
+    private Long id;
     /**
      * 账号
      */
@@ -39,6 +39,11 @@ public class ListUserInfoResponse implements Serializable {
     private String userRole;
 
     /**
+     * 用户头像地址
+     */
+    private String userPic;
+
+    /**
      * 用户简介
      */
     private String description;
@@ -54,6 +59,5 @@ public class ListUserInfoResponse implements Serializable {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
-
 
 }

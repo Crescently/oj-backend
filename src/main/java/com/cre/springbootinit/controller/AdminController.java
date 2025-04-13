@@ -8,7 +8,7 @@ import com.cre.springbootinit.common.PageBean;
 import com.cre.springbootinit.constant.UserConstant;
 import com.cre.springbootinit.exception.BusinessException;
 import com.cre.springbootinit.model.request.admin.*;
-import com.cre.springbootinit.model.response.admin.ListUserInfoResponse;
+import com.cre.springbootinit.model.vo.UserVo;
 import com.cre.springbootinit.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -25,16 +25,16 @@ public class AdminController {
     /**
      * 更新用户角色
      *
-     * @param updateUserRoleRequest updateUserRoleRequest
+     * @param userRoleUpdateRequest userRoleUpdateRequest
      * @return
      */
     @PutMapping("/updateUserRole")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse updateUserRole(@RequestBody UpdateUserRoleRequest updateUserRoleRequest) {
-        if (updateUserRoleRequest == null) {
+    public BaseResponse updateUserRole(@RequestBody UserRoleUpdateRequest userRoleUpdateRequest) {
+        if (userRoleUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        userService.updateUserRole(updateUserRoleRequest);
+        userService.updateUserRole(userRoleUpdateRequest);
         return BaseResponse.success();
 
     }
@@ -47,13 +47,13 @@ public class AdminController {
      */
     @PostMapping("/list")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<PageBean<ListUserInfoResponse>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest) {
+    public BaseResponse<PageBean<UserVo>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest) {
         if (userQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
-        PageBean<ListUserInfoResponse> userPageBean = userService.listUserByPage(userQueryRequest);
-        return BaseResponse.success(userPageBean);
+        PageBean<UserVo> userList = userService.listUserByPage(userQueryRequest);
+        return BaseResponse.success(userList);
     }
 
     /**
@@ -89,16 +89,16 @@ public class AdminController {
 
     /**
      * 更新用户
-     * @param updateUserInfoRequest
+     * @param userInfoUpdateRequest
      * @return
      */
     @PutMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse updateUser(@RequestBody UpdateUserInfoRequest updateUserInfoRequest) {
-        if (updateUserInfoRequest == null) {
+    public BaseResponse updateUser(@RequestBody UserInfoUpdateRequest userInfoUpdateRequest) {
+        if (userInfoUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        userService.updateUser(updateUserInfoRequest);
+        userService.updateUser(userInfoUpdateRequest);
         return BaseResponse.success();
     }
 

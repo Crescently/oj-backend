@@ -8,9 +8,8 @@ import com.cre.springbootinit.model.request.admin.*;
 import com.cre.springbootinit.model.request.user.UserRegisterRequest;
 import com.cre.springbootinit.model.request.user.UserUpdateInfoRequest;
 import com.cre.springbootinit.model.request.user.UserUpdatePwdRequest;
-import com.cre.springbootinit.model.response.admin.ListUserInfoResponse;
-import com.cre.springbootinit.model.response.user.UserInfoResponse;
 import com.cre.springbootinit.model.response.user.UserLoginResponse;
+import com.cre.springbootinit.model.vo.UserVo;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface UserService extends IService<User> {
@@ -20,7 +19,7 @@ public interface UserService extends IService<User> {
      * @param userAccount 用户账号
      * @return UserInfoResponse
      */
-    UserInfoResponse getUserInfoByAccount(String userAccount);
+    UserVo getUserInfoByAccount(String userAccount);
 
     /**
      * 用户注册
@@ -71,9 +70,9 @@ public interface UserService extends IService<User> {
     /**
      * 更新用户角色
      *
-     * @param updateUserRoleRequest updateUserRoleRequest
+     * @param userRoleUpdateRequest userRoleUpdateRequest
      */
-    void updateUserRole(UpdateUserRoleRequest updateUserRoleRequest);
+    void updateUserRole(UserRoleUpdateRequest userRoleUpdateRequest);
 
     /**
      * 获取当前登录用户
@@ -81,7 +80,6 @@ public interface UserService extends IService<User> {
      * @param request
      * @return
      */
-    User getLoginUser(HttpServletRequest request);
 
     /**
      * 获取用户列表
@@ -89,7 +87,7 @@ public interface UserService extends IService<User> {
      * @param userQueryRequest
      * @return
      */
-    PageBean<ListUserInfoResponse> listUserByPage(UserQueryRequest userQueryRequest);
+    PageBean<UserVo> listUserByPage(UserQueryRequest userQueryRequest);
 
     /**
      * 删除用户
@@ -108,7 +106,7 @@ public interface UserService extends IService<User> {
     /**
      * 管理员更新用户
      *
-     * @param updateUserInfoRequest
+     * @param userInfoUpdateRequest
      */
-    void updateUser(UpdateUserInfoRequest updateUserInfoRequest);
+    void updateUser(UserInfoUpdateRequest userInfoUpdateRequest);
 }

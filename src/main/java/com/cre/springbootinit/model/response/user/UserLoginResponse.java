@@ -4,7 +4,6 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * 用户登录响应
@@ -16,7 +15,7 @@ public class UserLoginResponse implements Serializable {
 
     private String token;
 
-    private Integer id;
+    private Long id;
 
     private String userAccount;
 

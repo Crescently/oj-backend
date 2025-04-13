@@ -7,7 +7,7 @@ import java.io.Serial;
 import java.io.Serializable;
 
 @Data
-public class UpdateUserRoleRequest implements Serializable {
+public class UserRoleUpdateRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
