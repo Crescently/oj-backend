@@ -15,6 +15,8 @@ public class UserUpdatePwdRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private Long userId;
+
     @NotBlank(message = "旧密码不能为空")
     private String oldPassword;
 

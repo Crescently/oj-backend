@@ -43,7 +43,7 @@ public class AdminController {
     }
 
     /**
-     * 获取用户列表
+     * 获取用户列表 (仅管理员)
      *
      * @param userQueryRequest listUserRequest
      * @return

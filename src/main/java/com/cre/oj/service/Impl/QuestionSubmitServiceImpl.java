@@ -15,11 +15,6 @@ import com.cre.oj.service.QuestionSubmitService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
-/**
- * @author Crescentlymon
- * @description 针对表【question_submit(题目提交)】的数据库操作Service实现
- * @createDate 2025-04-15 16:39:02
- */
 @Service
 public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper, QuestionSubmit>
         implements QuestionSubmitService {

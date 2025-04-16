@@ -6,6 +6,7 @@ import com.cre.oj.common.DeleteRequest;
 import com.cre.oj.model.entity.User;
 import com.cre.oj.model.request.admin.*;
 import com.cre.oj.model.request.user.UserRegisterRequest;
+import com.cre.oj.model.request.user.UserUpdateAvatarRequest;
 import com.cre.oj.model.request.user.UserUpdateInfoRequest;
 import com.cre.oj.model.request.user.UserUpdatePwdRequest;
 import com.cre.oj.model.response.user.UserLoginResponse;
@@ -38,9 +39,9 @@ public interface UserService extends IService<User> {
     /**
      * 更新用户头像
      *
-     * @param avatarUrl 头像URL
+     * @param userUpdateAvatarRequest userUpdateAvatarRequest
      */
-    void updateAvatar(String avatarUrl);
+    void updateAvatar(UserUpdateAvatarRequest userUpdateAvatarRequest);
 
     /**
      * 更新用户密码
@@ -97,5 +98,34 @@ public interface UserService extends IService<User> {
      */
     void updateUser(UserInfoUpdateRequest userInfoUpdateRequest);
 
+    /**
+     * 获取脱敏的用户信息
+     * @param user
+     * @return
+     */
     UserVO getUserVO(User user);
+
+    /**
+     * 获取当前登录用户
+     *
+     * @param request
+     * @return
+     */
+    User getLoginUser(HttpServletRequest request);
+
+    /**
+     * 是否为管理员
+     *
+     * @param request
+     * @return
+     */
+    boolean isAdmin(HttpServletRequest request);
+
+    /**
+     * 是否为管理员
+     *
+     * @param user
+     * @return
+     */
+    boolean isAdmin(User user);
 }

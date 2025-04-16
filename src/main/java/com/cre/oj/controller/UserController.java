@@ -5,18 +5,13 @@ import com.cre.oj.common.ErrorCode;
 import com.cre.oj.exception.BusinessException;
 import com.cre.oj.model.entity.User;
 import com.cre.oj.model.enums.UserRoleEnum;
-import com.cre.oj.model.request.user.UserLoginRequest;
-import com.cre.oj.model.request.user.UserRegisterRequest;
-import com.cre.oj.model.request.user.UserUpdateInfoRequest;
-import com.cre.oj.model.request.user.UserUpdatePwdRequest;
+import com.cre.oj.model.request.user.*;
 import com.cre.oj.model.response.user.UserLoginResponse;
 import com.cre.oj.model.vo.UserVO;
 import com.cre.oj.service.UserService;
-import com.cre.oj.utils.LoginUserInfoUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.URL;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.validation.annotation.Validated;
@@ -81,15 +76,13 @@ public class UserController {
      * @return BaseResponse
      */
     @PostMapping("/logout")
-    public BaseResponse<Boolean> userLogout(HttpServletRequest request, @RequestHeader("Authorization") String token) {
-        if (request == null || Objects.equals(token, "")) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        // 删除redis中的token
-        ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
-        operations.getOperations().delete(token);
-
+    public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
         boolean result = userService.userLogout(request);
+        User loginUser = userService.getLoginUser(request);
+        String redisKey = "login:user:" + loginUser.getId();
+        ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
+        operations.getOperations().delete(redisKey);
+
         return BaseResponse.success(result);
     }
 
@@ -99,9 +92,9 @@ public class UserController {
      * @return 用户信息
      */
     @GetMapping("/userInfo")
-    public BaseResponse<UserVO> getUserInfo() {
+    public BaseResponse<UserVO> getUserInfo(HttpServletRequest request) {
         // 2.查询数据库
-        User user = userService.getUser(LoginUserInfoUtil.getAccount());
+        User user = userService.getLoginUser(request);
         return BaseResponse.success(userService.getUserVO(user));
     }
 
@@ -120,11 +113,12 @@ public class UserController {
     /**
      * 更新头像
      *
-     * @param avatarUrl 头像url地址
+     * @param userUpdateAvatarRequest
+     * @return
      */
     @PatchMapping("/update/avatar")
-    public BaseResponse updateAvatar(@RequestParam @URL String avatarUrl) {
-        userService.updateAvatar(avatarUrl);
+    public BaseResponse updateAvatar(@RequestBody @Validated UserUpdateAvatarRequest userUpdateAvatarRequest) {
+        userService.updateAvatar(userUpdateAvatarRequest);
         return BaseResponse.success();
     }
 
@@ -136,11 +130,10 @@ public class UserController {
      */
     @PatchMapping("/update/pwd")
     public BaseResponse updatePassword(@RequestBody UserUpdatePwdRequest userUpdatePwdRequest, HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
         userService.updatePassword(userUpdatePwdRequest);
-        // 删除redis中的token
+        String redisKey = "login:user:" + userUpdatePwdRequest.getUserId();
         ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
-        operations.getOperations().delete(token);
+        operations.getOperations().delete(redisKey);
         // 执行退出操作
         userService.userLogout(request);
 

@@ -15,7 +15,6 @@ import com.cre.oj.model.request.question.*;
 import com.cre.oj.model.vo.QuestionVO;
 import com.cre.oj.service.QuestionService;
 import com.cre.oj.service.UserService;
-import com.cre.oj.utils.LoginUserInfoUtil;
 import com.google.gson.Gson;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,9 +26,6 @@ import java.util.List;
 
 /**
  * 题目接口
- *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
  */
 @RestController
 @RequestMapping("/question")
@@ -44,6 +40,7 @@ public class QuestionController {
     @Resource
     private Gson gson;
 
+    // region 增删改查
 
     /**
      * 创建
@@ -72,8 +69,8 @@ public class QuestionController {
             question.setJudgeConfig(gson.toJson(judgeConfig));
         }
         questionService.validQuestion(question, true);
-        User user = userService.getUser(LoginUserInfoUtil.getAccount());
-        question.setUserId(user.getId());
+        User loginUser = userService.getLoginUser(request);
+        question.setUserId(loginUser.getId());
         question.setFavourNum(0);
         question.setThumbNum(0);
         boolean result = questionService.save(question);
@@ -86,20 +83,21 @@ public class QuestionController {
      * 删除
      *
      * @param deleteRequest
+     * @param request
      * @return
      */
     @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteQuestion(@RequestBody DeleteRequest deleteRequest) {
+    public BaseResponse<Boolean> deleteQuestion(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User user = userService.getUser(LoginUserInfoUtil.getAccount());
+        User user = userService.getLoginUser(request);
         long id = deleteRequest.getId();
         // 判断是否存在
         Question oldQuestion = questionService.getById(id);
         ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
         // 仅本人或管理员可删除
-        if (!oldQuestion.getUserId().equals(user.getId()) && !user.getUserRole().equals(UserConstant.ADMIN_ROLE)) {
+        if (!oldQuestion.getUserId().equals(user.getId()) && !userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         boolean b = questionService.removeById(id);
@@ -149,7 +147,7 @@ public class QuestionController {
      * @return
      */
     @GetMapping("/get/vo")
-    public BaseResponse<QuestionVO> getQuestionVOById(long id, HttpServletRequest request) {
+    public BaseResponse<QuestionVO> getQuestionVOById(long id) {
         if (id <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -168,7 +166,7 @@ public class QuestionController {
      */
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest) {
+    public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest, HttpServletRequest request) {
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
         Page<Question> questionPage = questionService.page(new Page<>(current, size), questionService.getQueryWrapper(questionQueryRequest));
@@ -203,8 +201,8 @@ public class QuestionController {
         if (questionQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User user = userService.getUser(LoginUserInfoUtil.getAccount());
-        questionQueryRequest.setUserId(user.getId());
+        User loginUser = userService.getLoginUser(request);
+        questionQueryRequest.setUserId(loginUser.getId());
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
         // 限制爬虫
@@ -219,10 +217,11 @@ public class QuestionController {
      * 编辑（用户）
      *
      * @param questionEditRequest
+     * @param request
      * @return
      */
     @PostMapping("/edit")
-    public BaseResponse<Boolean> editQuestion(@RequestBody QuestionEditRequest questionEditRequest) {
+    public BaseResponse<Boolean> editQuestion(@RequestBody QuestionEditRequest questionEditRequest, HttpServletRequest request) {
         if (questionEditRequest == null || questionEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -242,13 +241,13 @@ public class QuestionController {
         }
         // 参数校验
         questionService.validQuestion(question, false);
-        User user = userService.getUser(LoginUserInfoUtil.getAccount());
+        User loginUser = userService.getLoginUser(request);
         long id = questionEditRequest.getId();
         // 判断是否存在
         Question oldQuestion = questionService.getById(id);
         ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
         // 仅本人或管理员可编辑
-        if (!oldQuestion.getUserId().equals(user.getId()) && !user.getUserRole().equals(UserConstant.ADMIN_ROLE)) {
+        if (!oldQuestion.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         boolean result = questionService.updateById(question);

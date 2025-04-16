@@ -28,17 +28,17 @@ create table if not exists question
     content     text              null comment '内容',
     tags        varchar(1024)     null comment '标签列表（json 数组）',
     answer      text              null comment '题目答案',
-    submitNum   int     default 0 not null comment '题目提交数',
-    acceptedNum int     default 0 not null comment '题目通过数',
-    judgeCase   text              null comment '判题用例（json 数组）',
-    judgeConfig text              null comment '判题配置（json 对象）',
-    thumbNum    int     default 0 not null comment '点赞数',
-    favourNum   int     default 0 not null comment '收藏数',
-    userId      bigint            not null comment '创建用户 id',
-    createTime  datetime          not null comment '创建时间',
-    updateTime  datetime          not null comment '更新时间',
+    submit_num   int     default 0 not null comment '题目提交数',
+    accepted_num int     default 0 not null comment '题目通过数',
+    judge_case   text              null comment '判题用例（json 数组）',
+    judge_config text              null comment '判题配置（json 对象）',
+    thumb_num    int     default 0 not null comment '点赞数',
+    favour_num   int     default 0 not null comment '收藏数',
+    user_id      bigint            not null comment '创建用户 id',
+    create_time  datetime          not null comment '创建时间',
+    update_time  datetime          not null comment '更新时间',
     isDelete    tinyint default 0 not null comment '是否删除',
-    index idx_userId (userId)
+    index idx_userId (user_id)
 ) comment '题目';
 
 -- 题目提交表
@@ -47,15 +47,15 @@ create table if not exists question_submit
     id         bigint auto_increment comment 'id' primary key,
     language   varchar(128)      not null comment '编程语言',
     code       text              not null comment '用户代码',
-    judgeInfo  text              null comment '判题信息（json 对象）',
+    judge_info  text              null comment '判题信息（json 对象）',
     status     int     default 0 not null comment '判题状态（0 - 待判题、1 - 判题中、2 - 成功、3 - 失败）',
-    questionId bigint            not null comment '题目 id',
-    userId     bigint            not null comment '创建用户 id',
-    createTime datetime          not null comment '创建时间',
-    updateTime datetime          not null comment '更新时间',
+    question_id bigint            not null comment '题目 id',
+    user_id     bigint            not null comment '创建用户 id',
+    create_time  datetime          not null comment '创建时间',
+    update_time  datetime          not null comment '更新时间',
     isDelete   tinyint default 0 not null comment '是否删除',
-    index idx_questionId (questionId),
-    index idx_userId (userId)
+    index idx_questionId (question_id),
+    index idx_userId (user_id)
 ) comment '题目提交';
 
 

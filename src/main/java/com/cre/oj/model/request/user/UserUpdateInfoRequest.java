@@ -16,6 +16,8 @@ public class UserUpdateInfoRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private Long id;
+
     @NotEmpty
     @Pattern(regexp = "\\S{1,10}$", message = "用户名长度为1-10个非空字符")
     private String username;

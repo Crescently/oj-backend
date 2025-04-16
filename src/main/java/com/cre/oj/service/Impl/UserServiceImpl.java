@@ -1,5 +1,6 @@
 package com.cre.oj.service.Impl;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cre.oj.common.DeleteRequest;
@@ -15,13 +16,12 @@ import com.cre.oj.model.request.admin.UserInfoUpdateRequest;
 import com.cre.oj.model.request.admin.UserQueryRequest;
 import com.cre.oj.model.request.admin.UserRoleUpdateRequest;
 import com.cre.oj.model.request.user.UserRegisterRequest;
+import com.cre.oj.model.request.user.UserUpdateAvatarRequest;
 import com.cre.oj.model.request.user.UserUpdateInfoRequest;
 import com.cre.oj.model.request.user.UserUpdatePwdRequest;
 import com.cre.oj.model.response.user.UserLoginResponse;
 import com.cre.oj.model.vo.UserVO;
 import com.cre.oj.service.UserService;
-import com.cre.oj.utils.JwtUtil;
-import com.cre.oj.utils.LoginUserInfoUtil;
 import com.cre.oj.utils.Md5Util;
 import com.cre.oj.utils.SqlUtils;
 import jakarta.annotation.Resource;
@@ -33,8 +33,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.cre.oj.constant.UserConstant.USER_LOGIN_STATE;
@@ -103,20 +101,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         // 判断密码正确性
         if (Md5Util.getMD5String(userPassword).equals(loginUser.getUserPassword())) {
-            // 登录成功，返回JWT令牌
-            Map<String, Object> claims = new HashMap<>();
-            claims.put("id", loginUser.getId());
-            claims.put("userAccount", loginUser.getUserAccount());
-            String token = JwtUtil.genToken(claims);
-            // 把token存入redis
+            // 将用户信息存入Redis
             ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
-            operations.set(token, token, 1, TimeUnit.HOURS);
-
+            String redisKey = "login:user:" + loginUser.getId();
+            operations.set(redisKey, JSONUtil.toJsonStr(loginUser), 1, TimeUnit.HOURS);
             // 封装返回值
             UserLoginResponse userLoginResponse = new UserLoginResponse();
-            userLoginResponse.setToken(token);
             BeanUtils.copyProperties(loginUser, userLoginResponse);
-
+            // 记录用户的登录态
             request.getSession().setAttribute(USER_LOGIN_STATE, loginUser);
             return userLoginResponse;
         }
@@ -192,6 +184,49 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return userVO;
     }
 
+    /**
+     * 获取当前登录用户
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    public User getLoginUser(HttpServletRequest request) {
+        // 先判断是否已登录
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User currentUser = (User) userObj;
+        if (currentUser == null || currentUser.getId() == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        // 从数据库查询（追求性能的话可以注释，直接走缓存）
+        long userId = currentUser.getId();
+        String redisKey = "login:user:" + userId;
+        String userJson = stringRedisTemplate.opsForValue().get(redisKey);
+        if (userJson == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        return currentUser;
+    }
+
+    /**
+     * 是否为管理员
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    public boolean isAdmin(HttpServletRequest request) {
+        // 仅管理员可查询
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User user = (User) userObj;
+        return isAdmin(user);
+    }
+
+    @Override
+    public boolean isAdmin(User user) {
+        return user != null && UserRoleEnum.ADMIN.getValue().equals(user.getUserRole());
+    }
+
 
     @Override
     public void updateUserRole(UserRoleUpdateRequest userRoleUpdateRequest) {
@@ -208,8 +243,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void updateUserInfo(UserUpdateInfoRequest userUpdateInfoRequest) {
-        Long id = LoginUserInfoUtil.getUserId();
-        User user = User.builder().id(id).username(userUpdateInfoRequest.getUsername()).userEmail(userUpdateInfoRequest.getUserEmail()).build();
+        Long id = userUpdateInfoRequest.getId();
+        String username = userUpdateInfoRequest.getUsername();
+        String userEmail = userUpdateInfoRequest.getUserEmail();
+
+        User user = User.builder().id(id).username(username).userEmail(userEmail).build();
         userMapper.update(user, new QueryWrapper<User>().eq("id", id));
     }
 
@@ -217,9 +255,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     更新头像
      */
     @Override
-    public void updateAvatar(String avatarUrl) {
+    public void updateAvatar(UserUpdateAvatarRequest userUpdateAvatarRequest) {
+        String avatarUrl = userUpdateAvatarRequest.getAvatarUrl();
+        Long userId = userUpdateAvatarRequest.getUserId();
+
         User user = User.builder().userPic(avatarUrl).build();
-        userMapper.update(user, new QueryWrapper<User>().eq("id", LoginUserInfoUtil.getUserId()));
+        userMapper.update(user, new QueryWrapper<User>().eq("id", userId));
     }
 
     @Override
@@ -227,9 +268,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String oldPassword = userUpdatePwdRequest.getOldPassword();
         String newPassword = userUpdatePwdRequest.getNewPassword();
         String rePassword = userUpdatePwdRequest.getRePassword();
+        Long userId = userUpdatePwdRequest.getUserId();
         // 原密码是否正确
         QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.select("*").eq("user_account", LoginUserInfoUtil.getAccount());
+        wrapper.select("*").eq("id", userId);
         User loginUser = userMapper.selectOne(wrapper);
         if (!Md5Util.checkPassword(oldPassword, loginUser.getUserPassword())) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, MessageConstant.OLD_PWD_ERROR);
@@ -241,7 +283,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String md5String = Md5Util.getMD5String(newPassword);
         // 2.更新数据库
         User user = User.builder().userPassword(md5String).build();
-        userMapper.update(user, new QueryWrapper<User>().eq("id", LoginUserInfoUtil.getUserId()));
+        userMapper.update(user, new QueryWrapper<User>().eq("id", userId));
     }
 
 }
