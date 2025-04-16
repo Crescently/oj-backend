@@ -8,7 +8,7 @@
         <version>3.1.2</version>
     </parent>
     <groupId>com.cre</groupId>
-    <artifactId>springbootInit</artifactId>
+    <artifactId>onlinejudge-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <properties>
         <java.version>17</java.version>
@@ -60,12 +60,6 @@
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>4.4.0</version>
-        </dependency>
-        <!--        PageHelper-->
-        <dependency>
-            <groupId>com.github.pagehelper</groupId>
-            <artifactId>pagehelper-spring-boot-starter</artifactId>
-            <version>1.4.7</version>
         </dependency>
         <!--        阿里云OSS-->
         <dependency>
