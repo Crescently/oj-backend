@@ -44,10 +44,6 @@ public class QuestionController {
 
     /**
      * 创建
-     *
-     * @param questionAddRequest
-     * @param request
-     * @return
      */
     @PostMapping("/add")
     public BaseResponse<Long> addQuestion(@RequestBody QuestionAddRequest questionAddRequest, HttpServletRequest request) {
@@ -81,10 +77,6 @@ public class QuestionController {
 
     /**
      * 删除
-     *
-     * @param deleteRequest
-     * @param request
-     * @return
      */
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteQuestion(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
@@ -106,9 +98,6 @@ public class QuestionController {
 
     /**
      * 更新（仅管理员）
-     *
-     * @param questionUpdateRequest
-     * @return
      */
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
@@ -142,9 +131,6 @@ public class QuestionController {
 
     /**
      * 根据 id 获取
-     *
-     * @param id
-     * @return
      */
     @GetMapping("/get/vo")
     public BaseResponse<QuestionVO> getQuestionVOById(long id) {
@@ -160,9 +146,6 @@ public class QuestionController {
 
     /**
      * 分页获取列表（仅管理员）
-     *
-     * @param questionQueryRequest
-     * @return
      */
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
@@ -175,9 +158,6 @@ public class QuestionController {
 
     /**
      * 分页获取列表（封装类）
-     *
-     * @param questionQueryRequest
-     * @return
      */
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<QuestionVO>> listQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest) {
@@ -191,10 +171,6 @@ public class QuestionController {
 
     /**
      * 分页获取当前用户创建的资源列表
-     *
-     * @param questionQueryRequest
-     * @param request
-     * @return
      */
     @PostMapping("/my/list/page/vo")
     public BaseResponse<Page<QuestionVO>> listMyQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest, HttpServletRequest request) {
@@ -215,10 +191,6 @@ public class QuestionController {
 
     /**
      * 编辑（用户）
-     *
-     * @param questionEditRequest
-     * @param request
-     * @return
      */
     @PostMapping("/edit")
     public BaseResponse<Boolean> editQuestion(@RequestBody QuestionEditRequest questionEditRequest, HttpServletRequest request) {

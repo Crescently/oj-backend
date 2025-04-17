@@ -6,7 +6,7 @@ import com.cre.oj.exception.BusinessException;
 import com.cre.oj.model.entity.User;
 import com.cre.oj.model.enums.UserRoleEnum;
 import com.cre.oj.model.request.user.*;
-import com.cre.oj.model.response.user.UserLoginResponse;
+import com.cre.oj.model.vo.LoginUserVO;
 import com.cre.oj.model.vo.UserVO;
 import com.cre.oj.service.UserService;
 import jakarta.annotation.Resource;
@@ -32,9 +32,6 @@ public class UserController {
 
     /**
      * 用户注册
-     *
-     * @param userRegisterRequest 用户注册请求体
-     * @return BaseResponse
      */
     @PostMapping("/register")
     public BaseResponse userRegister(@Validated @RequestBody UserRegisterRequest userRegisterRequest) {
@@ -48,12 +45,9 @@ public class UserController {
 
     /**
      * 用户登录
-     *
-     * @param userLoginRequest 用户登录请求体
-     * @return BaseResponse
      */
     @PostMapping("/login")
-    public BaseResponse<UserLoginResponse> userLogin(@Validated @RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public BaseResponse<LoginUserVO> userLogin(@Validated @RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -65,15 +59,12 @@ public class UserController {
         if (Objects.equals(user.getUserRole(), UserRoleEnum.BAN.getValue())) {
             throw new BusinessException(ErrorCode.FORBIDDEN_ERROR);
         }
-        UserLoginResponse userLoginResponse = userService.login(userAccount, userPassword, request);
-        return BaseResponse.success(userLoginResponse);
+        LoginUserVO loginUserVO = userService.login(userAccount, userPassword, request);
+        return BaseResponse.success(loginUserVO);
     }
 
     /**
      * 用户注销
-     *
-     * @param request HttpServletRequest
-     * @return BaseResponse
      */
     @PostMapping("/logout")
     public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
@@ -88,8 +79,6 @@ public class UserController {
 
     /**
      * 获取用户信息
-     *
-     * @return 用户信息
      */
     @GetMapping("/userInfo")
     public BaseResponse<UserVO> getUserInfo(HttpServletRequest request) {
@@ -100,9 +89,6 @@ public class UserController {
 
     /**
      * 更新用户信息
-     *
-     * @param userUpdateInfoRequest 用户信息更新请求体
-     * @return BaseResponse
      */
     @PutMapping("/update")
     public BaseResponse updateUserInfo(@RequestBody @Validated UserUpdateInfoRequest userUpdateInfoRequest) {
@@ -112,9 +98,6 @@ public class UserController {
 
     /**
      * 更新头像
-     *
-     * @param userUpdateAvatarRequest
-     * @return
      */
     @PatchMapping("/update/avatar")
     public BaseResponse updateAvatar(@RequestBody @Validated UserUpdateAvatarRequest userUpdateAvatarRequest) {
@@ -124,9 +107,6 @@ public class UserController {
 
     /**
      * 更新密码
-     *
-     * @param userUpdatePwdRequest 用户密码更新请求体
-     * @return BaseResponse
      */
     @PatchMapping("/update/pwd")
     public BaseResponse updatePassword(@RequestBody UserUpdatePwdRequest userUpdatePwdRequest, HttpServletRequest request) {

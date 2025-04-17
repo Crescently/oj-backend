@@ -38,9 +38,6 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
     /**
      * 校验题目合法
-     *
-     * @param question
-     * @param add
      */
     @Override
     public void validQuestion(Question question, boolean add) {
@@ -78,9 +75,6 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
     /**
      * 获取查询包装类
-     *
-     * @param questionQueryRequest
-     * @return
      */
     @Override
     public QueryWrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest) {

@@ -7,18 +7,24 @@ import com.cre.oj.model.entity.Question;
 import com.cre.oj.model.request.question.QuestionQueryRequest;
 import com.cre.oj.model.vo.QuestionVO;
 
-/**
-* @author Crescentlymon
-* @description 针对表【question(题目)】的数据库操作Service
-* @createDate 2025-04-15 16:34:38
-*/
 public interface QuestionService extends IService<Question> {
-
+    /**
+     * 校验题目合法
+     */
     void validQuestion(Question question, boolean b);
 
+    /**
+     * 获取问题对象（脱敏）
+     */
     QuestionVO getQuestionVO(Question question);
 
+    /**
+     * 获取查询包装类
+     */
     Wrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest);
 
+    /**
+     * 获取问题对象分页（脱敏）
+     */
     Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage);
 }

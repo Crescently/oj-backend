@@ -27,9 +27,6 @@ public class AdminController {
 
     /**
      * 更新用户角色
-     *
-     * @param userRoleUpdateRequest userRoleUpdateRequest
-     * @return
      */
     @PutMapping("/update/role")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
@@ -44,9 +41,6 @@ public class AdminController {
 
     /**
      * 获取用户列表 (仅管理员)
-     *
-     * @param userQueryRequest listUserRequest
-     * @return
      */
     @PostMapping("/list")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
@@ -59,9 +53,6 @@ public class AdminController {
 
     /**
      * 删除用户
-     *
-     * @param deleteRequest deleteUserRequest
-     * @return
      */
     @DeleteMapping("/delete")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
@@ -75,9 +66,6 @@ public class AdminController {
 
     /**
      * 添加用户
-     *
-     * @param userAddRequest
-     * @return
      */
     @PutMapping("/add")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
@@ -91,9 +79,6 @@ public class AdminController {
 
     /**
      * 更新用户
-     *
-     * @param userInfoUpdateRequest
-     * @return
      */
     @PutMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)

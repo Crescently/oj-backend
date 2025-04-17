@@ -19,7 +19,7 @@ import com.cre.oj.model.request.user.UserRegisterRequest;
 import com.cre.oj.model.request.user.UserUpdateAvatarRequest;
 import com.cre.oj.model.request.user.UserUpdateInfoRequest;
 import com.cre.oj.model.request.user.UserUpdatePwdRequest;
-import com.cre.oj.model.response.user.UserLoginResponse;
+import com.cre.oj.model.vo.LoginUserVO;
 import com.cre.oj.model.vo.UserVO;
 import com.cre.oj.service.UserService;
 import com.cre.oj.utils.Md5Util;
@@ -32,6 +32,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.TimeUnit;
 
@@ -91,7 +92,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public UserLoginResponse login(String userAccount, String userPassword, HttpServletRequest request) {
+    public LoginUserVO login(String userAccount, String userPassword, HttpServletRequest request) {
         // 根据用户名查询用户
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("user_account", userAccount);
@@ -106,19 +107,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             String redisKey = "login:user:" + loginUser.getId();
             operations.set(redisKey, JSONUtil.toJsonStr(loginUser), 1, TimeUnit.HOURS);
             // 封装返回值
-            UserLoginResponse userLoginResponse = new UserLoginResponse();
-            BeanUtils.copyProperties(loginUser, userLoginResponse);
+            LoginUserVO loginUserVO = new LoginUserVO();
+            BeanUtils.copyProperties(loginUser, loginUserVO);
             // 记录用户的登录态
             request.getSession().setAttribute(USER_LOGIN_STATE, loginUser);
-            return userLoginResponse;
+            return loginUserVO;
         }
         throw new BusinessException(ErrorCode.PARAMS_ERROR, MessageConstant.PASSWORD_ERROR);
     }
 
     /**
-     * 用户注销
-     *
-     * @param request
+     * 用户注销t
      */
     @Override
     public boolean userLogout(HttpServletRequest request) {
@@ -186,9 +185,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 获取当前登录用户
-     *
-     * @param request
-     * @return
      */
     @Override
     public User getLoginUser(HttpServletRequest request) {
@@ -205,14 +201,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (userJson == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
+        currentUser = JSONUtil.toBean(userJson, User.class);
         return currentUser;
     }
 
     /**
      * 是否为管理员
-     *
-     * @param request
-     * @return
      */
     @Override
     public boolean isAdmin(HttpServletRequest request) {
@@ -229,6 +223,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateUserRole(UserRoleUpdateRequest userRoleUpdateRequest) {
         String userAccount = userRoleUpdateRequest.getUserAccount();
         String newUserRole = userRoleUpdateRequest.getNewUserRole();
@@ -238,32 +233,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         User user = User.builder().userRole(newUserRole).build();
         userMapper.update(user, wrapper);
+        updateUserInRedis(user.getId());
     }
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateUserInfo(UserUpdateInfoRequest userUpdateInfoRequest) {
         Long id = userUpdateInfoRequest.getId();
         String username = userUpdateInfoRequest.getUsername();
         String userEmail = userUpdateInfoRequest.getUserEmail();
 
         User user = User.builder().id(id).username(username).userEmail(userEmail).build();
+        // 更新redis
         userMapper.update(user, new QueryWrapper<User>().eq("id", id));
+        updateUserInRedis(user.getId());
     }
 
     /*
     更新头像
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateAvatar(UserUpdateAvatarRequest userUpdateAvatarRequest) {
         String avatarUrl = userUpdateAvatarRequest.getAvatarUrl();
         Long userId = userUpdateAvatarRequest.getUserId();
 
         User user = User.builder().userPic(avatarUrl).build();
         userMapper.update(user, new QueryWrapper<User>().eq("id", userId));
+        updateUserInRedis(user.getId());
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updatePassword(UserUpdatePwdRequest userUpdatePwdRequest) {
         String oldPassword = userUpdatePwdRequest.getOldPassword();
         String newPassword = userUpdatePwdRequest.getNewPassword();
@@ -284,6 +286,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 2.更新数据库
         User user = User.builder().userPassword(md5String).build();
         userMapper.update(user, new QueryWrapper<User>().eq("id", userId));
+        updateUserInRedis(user.getId());
     }
+
+    // 在用户服务类中添加通用方法
+    private void updateUserInRedis(Long userId) {
+        try {
+            // 1. 查询最新用户数据
+            User latestUser = userMapper.selectById(userId);
+            if (latestUser != null) {
+                // 2. 更新Redis缓存
+                ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
+                String redisKey = "login:user:" + latestUser.getId();
+                operations.set(redisKey, JSONUtil.toJsonStr(latestUser), 1, TimeUnit.HOURS);
+            }
+        } catch (Exception e) {
+            log.error("Redis用户信息更新失败，用户ID：{}", userId, e);
+        }
+    }
+
 
 }

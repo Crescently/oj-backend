@@ -5,12 +5,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * 题目提交
- *
- * @TableName question_submit
+
  */
 @TableName(value = "question_submit")
 @Data

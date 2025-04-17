@@ -9,13 +9,10 @@ import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 /**
  * 题目
- *
- * @TableName question
  */
 @Data
 public class QuestionVO implements Serializable {
@@ -86,9 +83,6 @@ public class QuestionVO implements Serializable {
 
     /**
      * 包装类转对象
-     *
-     * @param questionVO
-     * @return
      */
     public static Question voToObj(QuestionVO questionVO) {
         if (questionVO == null) {
@@ -108,9 +102,6 @@ public class QuestionVO implements Serializable {
 
     /**
      * 对象转包装类
-     *
-     * @param question
-     * @return
      */
     public static QuestionVO objToVo(Question question) {
         if (question == null) {

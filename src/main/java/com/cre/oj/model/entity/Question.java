@@ -5,13 +5,11 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * 题目
- * @TableName question
  */
-@TableName(value ="question")
+@TableName(value = "question")
 @Data
 public class Question {
     /**
@@ -53,7 +51,6 @@ public class Question {
     /**
      * 判题用例（json 数组）
      */
-    @TableField("")
     private String judgeCase;
 
     /**

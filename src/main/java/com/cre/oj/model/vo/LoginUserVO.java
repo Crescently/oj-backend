@@ -1,4 +1,4 @@
-package com.cre.oj.model.response.user;
+package com.cre.oj.model.vo;
 
 import lombok.Data;
 
@@ -9,7 +9,7 @@ import java.io.Serializable;
  * 用户登录响应
  */
 @Data
-public class UserLoginResponse implements Serializable {
+public class LoginUserVO implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
