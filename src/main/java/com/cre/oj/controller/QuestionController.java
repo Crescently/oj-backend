@@ -12,10 +12,10 @@ import com.cre.oj.exception.ThrowUtils;
 import com.cre.oj.model.entity.Question;
 import com.cre.oj.model.entity.User;
 import com.cre.oj.model.request.question.*;
+import com.cre.oj.model.vo.QuestionAdminVO;
 import com.cre.oj.model.vo.QuestionVO;
 import com.cre.oj.service.QuestionService;
 import com.cre.oj.service.UserService;
-import com.google.gson.Gson;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -37,10 +37,7 @@ public class QuestionController {
 
     @Resource
     private UserService userService;
-    @Resource
-    private Gson gson;
 
-    // region 增删改查
 
     /**
      * 创建
@@ -58,11 +55,11 @@ public class QuestionController {
         }
         List<JudgeCase> judgeCase = questionAddRequest.getJudgeCase();
         if (judgeCase != null) {
-            question.setJudgeCase(gson.toJson(judgeCase));
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
         }
         JudgeConfig judgeConfig = questionAddRequest.getJudgeConfig();
         if (judgeConfig != null) {
-            question.setJudgeConfig(gson.toJson(judgeConfig));
+            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
         questionService.validQuestion(question, true);
         User loginUser = userService.getLoginUser(request);
@@ -84,7 +81,7 @@ public class QuestionController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User user = userService.getLoginUser(request);
-        long id = deleteRequest.getId();
+        Long id = deleteRequest.getId();
         // 判断是否存在
         Question oldQuestion = questionService.getById(id);
         ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
@@ -113,11 +110,11 @@ public class QuestionController {
         }
         List<JudgeCase> judgeCase = questionUpdateRequest.getJudgeCase();
         if (judgeCase != null) {
-            question.setJudgeCase(gson.toJson(judgeCase));
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
         }
         JudgeConfig judgeConfig = questionUpdateRequest.getJudgeConfig();
         if (judgeConfig != null) {
-            question.setJudgeConfig(gson.toJson(judgeConfig));
+            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
         // 参数校验
         questionService.validQuestion(question, false);
@@ -130,10 +127,29 @@ public class QuestionController {
     }
 
     /**
-     * 根据 id 获取
+     * 根据id获取（管理员）
+     */
+    @GetMapping("/get")
+    public BaseResponse<QuestionAdminVO> getQuestionById(Long id, HttpServletRequest request) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Question question = questionService.getById(id);
+        if (question == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        User user = userService.getLoginUser(request);
+        if (!question.getUserId().equals(user.getId()) && !userService.isAdmin(request)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        return BaseResponse.success(QuestionAdminVO.objToVo(question));
+    }
+
+    /**
+     * 根据 id 获取 (脱敏)
      */
     @GetMapping("/get/vo")
-    public BaseResponse<QuestionVO> getQuestionVOById(long id) {
+    public BaseResponse<QuestionVO> getQuestionVOById(Long id) {
         if (id <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -149,7 +165,7 @@ public class QuestionController {
      */
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest, HttpServletRequest request) {
+    public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest) {
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
         Page<Question> questionPage = questionService.page(new Page<>(current, size), questionService.getQueryWrapper(questionQueryRequest));
@@ -187,8 +203,6 @@ public class QuestionController {
         return BaseResponse.success(questionService.getQuestionVOPage(questionPage));
     }
 
-    // endregion
-
     /**
      * 编辑（用户）
      */
@@ -205,11 +219,11 @@ public class QuestionController {
         }
         List<JudgeCase> judgeCase = questionEditRequest.getJudgeCase();
         if (judgeCase != null) {
-            question.setJudgeCase(gson.toJson(judgeCase));
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
         }
         JudgeConfig judgeConfig = questionEditRequest.getJudgeConfig();
         if (judgeConfig != null) {
-            question.setJudgeConfig(gson.toJson(judgeConfig));
+            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
         // 参数校验
         questionService.validQuestion(question, false);
