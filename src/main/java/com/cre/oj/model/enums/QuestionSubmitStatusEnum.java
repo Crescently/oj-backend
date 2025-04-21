@@ -1,5 +1,6 @@
 package com.cre.oj.model.enums;
 
+import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.Arrays;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 /**
  *  题目枚举
  */
+@Getter
 public enum QuestionSubmitStatusEnum {
 
     WAITING("等待中", 0),
@@ -47,11 +49,4 @@ public enum QuestionSubmitStatusEnum {
         return null;
     }
 
-    public Integer getValue() {
-        return value;
-    }
-
-    public String getText() {
-        return text;
-    }
 }

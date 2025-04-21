@@ -1,5 +1,6 @@
 package com.cre.oj.model.enums;
 
+import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.Arrays;
@@ -9,11 +10,13 @@ import java.util.stream.Collectors;
 /**
  * 编程语言枚举
  */
+@Getter
 public enum QuestionSubmitLanguageEnum {
 
     JAVA("java", "java"),
-    CPLUSPLUS("c++", "c++"),
-    GOLANG("golang", "golang");
+    CPLUSPLUS("c", "c"),
+    GOLANG("go", "go"),
+    PYTHON("python","python");
 
     private final String text;
 
@@ -26,8 +29,6 @@ public enum QuestionSubmitLanguageEnum {
 
     /**
      * 获取值列表
-     *
-     * @return
      */
     public static List<String> getValues() {
         return Arrays.stream(values()).map(item -> item.value).collect(Collectors.toList());
@@ -36,8 +37,6 @@ public enum QuestionSubmitLanguageEnum {
     /**
      * 根据 value 获取枚举
      *
-     * @param value
-     * @return
      */
     public static QuestionSubmitLanguageEnum getEnumByValue(String value) {
         if (ObjectUtils.isEmpty(value)) {
@@ -51,11 +50,4 @@ public enum QuestionSubmitLanguageEnum {
         return null;
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public String getText() {
-        return text;
-    }
 }

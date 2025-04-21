@@ -1,5 +1,6 @@
 package com.cre.oj.model.enums;
 
+import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.Arrays;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 /**
  * 判题消息枚举
  */
+@Getter
 public enum JudgeInfoMessageEnum {
 
     ACCEPT("成功", "Accepted"),
@@ -54,11 +56,4 @@ public enum JudgeInfoMessageEnum {
         return null;
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public String getText() {
-        return text;
-    }
 }
