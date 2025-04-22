@@ -25,14 +25,20 @@ public class UserInfoUpdateRequest implements Serializable {
     private String username;
 
     /**
+     * 手机号
+     */
+    private String telephone;
+
+    /**
+     * 住址
+     */
+    private String address;
+
+    /**
      * 邮箱
      */
     private String userEmail;
 
-    /**
-     * 用户简介
-     */
-    private String description;
 
     /**
      * 用户角色

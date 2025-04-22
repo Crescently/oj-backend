@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cre.oj.common.DeleteRequest;
 import com.cre.oj.model.entity.User;
-import com.cre.oj.model.request.admin.*;
+import com.cre.oj.model.request.admin.UserAddRequest;
+import com.cre.oj.model.request.admin.UserInfoUpdateRequest;
+import com.cre.oj.model.request.admin.UserQueryRequest;
 import com.cre.oj.model.request.user.UserRegisterRequest;
 import com.cre.oj.model.request.user.UserUpdateAvatarRequest;
 import com.cre.oj.model.request.user.UserUpdateInfoRequest;
@@ -49,13 +51,9 @@ public interface UserService extends IService<User> {
      */
     boolean userLogout(HttpServletRequest request);
 
-    /**
-     * 更新用户角色
-     */
-    void updateUserRole(UserRoleUpdateRequest userRoleUpdateRequest);
-
 
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
+
     /**
      * 删除用户
      */

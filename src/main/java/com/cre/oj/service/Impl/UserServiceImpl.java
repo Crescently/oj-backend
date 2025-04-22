@@ -14,7 +14,6 @@ import com.cre.oj.model.enums.UserRoleEnum;
 import com.cre.oj.model.request.admin.UserAddRequest;
 import com.cre.oj.model.request.admin.UserInfoUpdateRequest;
 import com.cre.oj.model.request.admin.UserQueryRequest;
-import com.cre.oj.model.request.admin.UserRoleUpdateRequest;
 import com.cre.oj.model.request.user.UserRegisterRequest;
 import com.cre.oj.model.request.user.UserUpdateAvatarRequest;
 import com.cre.oj.model.request.user.UserUpdateInfoRequest;
@@ -139,12 +138,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String userAccount = userQueryRequest.getUserAccount();
         String username = userQueryRequest.getUsername();
         String userRole = userQueryRequest.getUserRole();
+        String telephone = userQueryRequest.getTelephone();
         String sortField = userQueryRequest.getSortField();
         String sortOrder = userQueryRequest.getSortOrder();
 
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.like(StringUtils.isNotBlank(userAccount), "user_account", userAccount);
         queryWrapper.like(StringUtils.isNotBlank(username), "username", username);
+        queryWrapper.like(StringUtils.isNotBlank(telephone), "telephone", telephone);
         queryWrapper.eq(StringUtils.isNotBlank(userRole), "user_role", userRole);
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC), sortField);
         return queryWrapper;
@@ -157,15 +158,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void addUser(UserAddRequest userAddRequest) {
-        User user = User.builder().username(userAddRequest.getUsername()).userAccount(userAddRequest.getUserAccount()).userEmail(userAddRequest.getUserEmail()).description(userAddRequest.getDescription()).userRole(userAddRequest.getUserRole()).build();
+        String userAccount = userAddRequest.getUserAccount();
+        String username = userAddRequest.getUsername();
+        String userEmail = userAddRequest.getUserEmail();
+        String telephone = userAddRequest.getTelephone();
+        String address = userAddRequest.getAddress();
+        String userRole = userAddRequest.getUserRole();
 
+        User user = new User();
+        user.setUserAccount(userAccount);
+        user.setUsername(username);
+        user.setUserEmail(userEmail);
+        user.setTelephone(telephone);
+        user.setAddress(address);
+        user.setUserRole(userRole);
         userMapper.insert(user);
     }
 
     @Override
     public void updateUser(UserInfoUpdateRequest userInfoUpdateRequest) {
         Long id = userInfoUpdateRequest.getId();
-        User user = User.builder().username(userInfoUpdateRequest.getUsername()).userAccount(userInfoUpdateRequest.getUserAccount()).userEmail(userInfoUpdateRequest.getUserEmail()).description(userInfoUpdateRequest.getDescription()).userRole(userInfoUpdateRequest.getUserRole()).build();
+        String userAccount = userInfoUpdateRequest.getUserAccount();
+        String username = userInfoUpdateRequest.getUsername();
+        String telephone = userInfoUpdateRequest.getTelephone();
+        String address = userInfoUpdateRequest.getAddress();
+        String userEmail = userInfoUpdateRequest.getUserEmail();
+        String userRole = userInfoUpdateRequest.getUserRole();
+
+        User user = new User();
+        user.setUserAccount(userAccount);
+        user.setUsername(username);
+        user.setUserEmail(userEmail);
+        user.setTelephone(telephone);
+        user.setAddress(address);
+        user.setUserRole(userRole);
 
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("id", id);
@@ -224,27 +250,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateUserRole(UserRoleUpdateRequest userRoleUpdateRequest) {
-        String userAccount = userRoleUpdateRequest.getUserAccount();
-        String newUserRole = userRoleUpdateRequest.getNewUserRole();
-
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_account", userAccount);
-
-        User user = User.builder().userRole(newUserRole).build();
-        userMapper.update(user, wrapper);
-        updateUserInRedis(user.getId());
-    }
-
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateUserInfo(UserUpdateInfoRequest userUpdateInfoRequest) {
         Long id = userUpdateInfoRequest.getId();
         String username = userUpdateInfoRequest.getUsername();
         String userEmail = userUpdateInfoRequest.getUserEmail();
+        String signature = userUpdateInfoRequest.getSignature();
+        String telephone = userUpdateInfoRequest.getTelephone();
+        String address = userUpdateInfoRequest.getAddress();
+        String description = userUpdateInfoRequest.getDescription();
 
-        User user = User.builder().id(id).username(username).userEmail(userEmail).build();
+        User user = User.builder()
+                .id(id)
+                .username(username)
+                .userEmail(userEmail)
+                .signature(signature)
+                .telephone(telephone)
+                .address(address)
+                .description(description)
+                .build();
         // 更新redis
         userMapper.update(user, new QueryWrapper<User>().eq("id", id));
         updateUserInRedis(user.getId());

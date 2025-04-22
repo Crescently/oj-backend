@@ -41,10 +41,24 @@ public class LoginUserVO implements Serializable {
     private String userEmail;
 
     /**
+     * 个性签名
+     */
+    private String signature;
+
+    /**
+     * 手机号
+     */
+    private String telephone;
+
+    /**
+     * 住址
+     */
+    private String address;
+
+    /**
      * 用户头像
      */
     private String userPic;
-
 
     /**
      * 用户简介

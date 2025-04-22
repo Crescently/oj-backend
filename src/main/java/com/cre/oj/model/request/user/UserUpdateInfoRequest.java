@@ -26,5 +26,25 @@ public class UserUpdateInfoRequest implements Serializable {
     @NotEmpty //非空字符串
     private String userEmail;
 
+    /**
+     * 个性签名
+     */
+    private String signature;
+
+    /**
+     * 手机号
+     */
+    private String telephone;
+
+    /**
+     * 住址
+     */
+    private String address;
+
+    /**
+     * 个人简介
+     */
+    private String description;
+
 
 }

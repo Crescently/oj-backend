@@ -32,6 +32,21 @@ public class UserVO implements Serializable {
     private String userEmail;
 
     /**
+     * 个性签名
+     */
+    private String signature;
+
+    /**
+     * 手机号
+     */
+    private String telephone;
+
+    /**
+     * 住址
+     */
+    private String address;
+
+    /**
      * 用户角色
      */
     private String userRole;

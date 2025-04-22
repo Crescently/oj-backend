@@ -2,8 +2,10 @@ package com.cre.oj.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -15,6 +17,8 @@ import java.time.LocalDateTime;
 @Data
 @TableName("user")
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -49,6 +53,21 @@ public class User implements Serializable {
      * 用户邮箱
      */
     private String userEmail;
+
+    /**
+     * 个性签名
+     */
+    private String signature;
+
+    /**
+     * 手机号
+     */
+    private String telephone;
+
+    /**
+     * 住址
+     */
+    private String address;
 
     /**
      * 用户头像

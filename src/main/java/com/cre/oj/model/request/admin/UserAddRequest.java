@@ -27,9 +27,15 @@ public class UserAddRequest implements Serializable {
     private String userEmail;
 
     /**
-     * 用户简介
+     * 手机号
      */
-    private String description;
+    private String telephone;
+
+    /**
+     * 住址
+     */
+    private String address;
+
 
     /**
      * 用户角色

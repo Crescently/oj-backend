@@ -13,6 +13,9 @@ create table user
     username      varchar(10)  default '' comment '用户名',
     user_role     varchar(10)  default '' comment '用户权限',
     user_email    varchar(128) default '' comment '邮箱',
+    signature     text         default '' comment '个性签名',
+    telephone     varchar(20)  default '' comment '手机号',
+    address       varchar(100) default '' comment '住址',
     user_pic      varchar(128) default '' comment '头像',
     description   text         default '' comment '个人简介',
     create_time   datetime               not null comment '创建时间',
@@ -23,11 +26,11 @@ create table user
 -- 题目表
 create table if not exists question
 (
-    id          bigint auto_increment comment 'id' primary key,
-    title       varchar(512)      null comment '标题',
-    content     text              null comment '内容',
-    tags        varchar(1024)     null comment '标签列表（json 数组）',
-    answer      text              null comment '题目答案',
+    id           bigint auto_increment comment 'id' primary key,
+    title        varchar(512)      null comment '标题',
+    content      text              null comment '内容',
+    tags         varchar(1024)     null comment '标签列表（json 数组）',
+    answer       text              null comment '题目答案',
     submit_num   int     default 0 not null comment '题目提交数',
     accepted_num int     default 0 not null comment '题目通过数',
     judge_case   text              null comment '判题用例（json 数组）',
@@ -37,23 +40,23 @@ create table if not exists question
     user_id      bigint            not null comment '创建用户 id',
     create_time  datetime          not null comment '创建时间',
     update_time  datetime          not null comment '更新时间',
-    isDelete    tinyint default 0 not null comment '是否删除',
+    isDelete     tinyint default 0 not null comment '是否删除',
     index idx_userId (user_id)
 ) comment '题目';
 
 -- 题目提交表
 create table if not exists question_submit
 (
-    id         bigint auto_increment comment 'id' primary key,
-    language   varchar(128)      not null comment '编程语言',
-    code       text              not null comment '用户代码',
+    id          bigint auto_increment comment 'id' primary key,
+    language    varchar(128)      not null comment '编程语言',
+    code        text              not null comment '用户代码',
     judge_info  text              null comment '判题信息（json 对象）',
-    status     int     default 0 not null comment '判题状态（0 - 待判题、1 - 判题中、2 - 成功、3 - 失败）',
+    status      int     default 0 not null comment '判题状态（0 - 待判题、1 - 判题中、2 - 成功、3 - 失败）',
     question_id bigint            not null comment '题目 id',
     user_id     bigint            not null comment '创建用户 id',
-    create_time  datetime          not null comment '创建时间',
-    update_time  datetime          not null comment '更新时间',
-    isDelete   tinyint default 0 not null comment '是否删除',
+    create_time datetime          not null comment '创建时间',
+    update_time datetime          not null comment '更新时间',
+    isDelete    tinyint default 0 not null comment '是否删除',
     index idx_questionId (question_id),
     index idx_userId (user_id)
 ) comment '题目提交';

@@ -11,7 +11,6 @@ import com.cre.oj.model.entity.User;
 import com.cre.oj.model.request.admin.UserAddRequest;
 import com.cre.oj.model.request.admin.UserInfoUpdateRequest;
 import com.cre.oj.model.request.admin.UserQueryRequest;
-import com.cre.oj.model.request.admin.UserRoleUpdateRequest;
 import com.cre.oj.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -24,20 +23,6 @@ public class AdminController {
 
     @Resource
     private UserService userService;
-
-    /**
-     * 更新用户角色
-     */
-    @PutMapping("/update/role")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse updateUserRole(@RequestBody UserRoleUpdateRequest userRoleUpdateRequest) {
-        if (userRoleUpdateRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        userService.updateUserRole(userRoleUpdateRequest);
-        return BaseResponse.success();
-
-    }
 
     /**
      * 获取用户列表 (仅管理员)
