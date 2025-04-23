@@ -63,6 +63,17 @@ public class QuestionVO implements Serializable {
     private Integer favourNum;
 
     /**
+     * 是否点赞
+     */
+    private boolean isThumb;
+
+    /**
+     * 是否收藏
+     */
+    private boolean isFavour;
+
+
+    /**
      * 创建用户 id
      */
     private Long userId;

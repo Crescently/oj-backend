@@ -8,8 +8,12 @@ import com.cre.oj.common.ErrorCode;
 import com.cre.oj.constant.CommonConstant;
 import com.cre.oj.exception.BusinessException;
 import com.cre.oj.exception.ThrowUtils;
+import com.cre.oj.mapper.QuestionFavourMapper;
 import com.cre.oj.mapper.QuestionMapper;
+import com.cre.oj.mapper.QuestionThumbMapper;
 import com.cre.oj.model.entity.Question;
+import com.cre.oj.model.entity.QuestionFavour;
+import com.cre.oj.model.entity.QuestionThumb;
 import com.cre.oj.model.entity.User;
 import com.cre.oj.model.request.question.QuestionQueryRequest;
 import com.cre.oj.model.vo.QuestionVO;
@@ -18,10 +22,12 @@ import com.cre.oj.service.QuestionService;
 import com.cre.oj.service.UserService;
 import com.cre.oj.utils.SqlUtils;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +41,12 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private QuestionFavourMapper questionFavourMapper;
+
+    @Resource
+    private QuestionThumbMapper questionThumbMapper;
 
     /**
      * 校验题目合法
@@ -119,11 +131,35 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         }
         UserVO userVO = userService.getUserVO(user);
         questionVO.setUserVO(userVO);
+
+        //2. 根据文章id查询当前用户是否收藏
+        QueryWrapper<QuestionFavour> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("question_id", questionId);
+        List<QuestionFavour> questionFavours = questionFavourMapper.selectList(queryWrapper);
+        if (questionFavours.isEmpty()) {
+            questionVO.setFavour(false);
+        } else {
+            for (QuestionFavour questionFavour : questionFavours) {
+                questionVO.setFavour(questionFavour.getUserId().equals(userId));
+            }
+        }
+        // 3. 根据文章id查询当前用户是否点赞
+        QueryWrapper<QuestionThumb> queryWrapper2 = new QueryWrapper<>();
+        queryWrapper2.eq("question_id", questionId);
+        List<QuestionThumb> questionThumbs = questionThumbMapper.selectList(queryWrapper2);
+        if (questionThumbs.isEmpty()) {
+            questionVO.setThumb(false);
+        } else {
+            for (QuestionThumb questionThumb : questionThumbs) {
+                questionVO.setThumb(questionThumb.getUserId().equals(userId));
+            }
+        }
+
         return questionVO;
     }
 
     @Override
-    public Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage) {
+    public Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage, HttpServletRequest request) {
         List<Question> questionList = questionPage.getRecords();
         Page<QuestionVO> questionVOPage = new Page<>(questionPage.getCurrent(), questionPage.getSize(), questionPage.getTotal());
         if (CollUtil.isEmpty(questionList)) {
@@ -132,6 +168,24 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         // 1. 关联查询用户信息
         Set<Long> userIdSet = questionList.stream().map(Question::getUserId).collect(Collectors.toSet());
         Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream().collect(Collectors.groupingBy(User::getId));
+
+        // 2. 已登录，获取用户点赞、收藏状态
+        Map<Long, Boolean> questionIdHasThumbMap = new HashMap<>();
+        Map<Long, Boolean> questionIdHasFavourMap = new HashMap<>();
+        User loginUser = userService.getLoginUser(request);
+
+        if (loginUser != null) {
+            Set<Long> questionIdSet = questionList.stream().map(Question::getId).collect(Collectors.toSet());
+            loginUser = userService.getLoginUser(request);
+            // 获取点赞状态
+            List<QuestionThumb> questionThumbList = questionThumbMapper.selectList(new QueryWrapper<QuestionThumb>().in("question_id", questionIdSet).eq("user_id", loginUser.getId()));
+            questionThumbList.forEach(questionThumb -> questionIdHasThumbMap.put(questionThumb.getQuestionId(), true));
+
+            // 获取收藏状态
+            List<QuestionFavour> questionFavourList = questionFavourMapper.selectList(new QueryWrapper<QuestionFavour>().in("question_id", questionIdSet).eq("user_id", loginUser.getId()));
+            questionFavourList.forEach(questionFavour -> questionIdHasFavourMap.put(questionFavour.getQuestionId(), true));
+
+        }
 
         // 填充信息
         List<QuestionVO> questionVOList = questionList.stream().map(question -> {

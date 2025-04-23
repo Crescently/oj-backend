@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cre.oj.model.entity.Question;
 import com.cre.oj.model.request.question.QuestionQueryRequest;
 import com.cre.oj.model.vo.QuestionVO;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface QuestionService extends IService<Question> {
     /**
@@ -26,5 +27,5 @@ public interface QuestionService extends IService<Question> {
     /**
      * 获取问题对象分页（脱敏）
      */
-    Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage);
+    Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage, HttpServletRequest request);
 }

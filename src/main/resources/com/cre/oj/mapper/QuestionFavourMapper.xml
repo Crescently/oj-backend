@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cre.oj.mapper.QuestionFavourMapper">
+
+    <select id="listFavourQuestionByPage"
+            resultType="com.cre.oj.model.entity.Question">
+        select a.*
+        from my_oj.question a
+                 join (select question_id from my_oj.question_favour where user_id = #{favourUserId}) af
+                      on a.id = af.question_id ${ew.customSqlSegment}
+    </select>
+</mapper>
+

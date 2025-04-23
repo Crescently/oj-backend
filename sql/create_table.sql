@@ -61,4 +61,28 @@ create table if not exists question_submit
     index idx_userId (user_id)
 ) comment '题目提交';
 
+create table if not exists question_thumb
+(
+    id          bigint auto_increment comment 'id' primary key,
+    question_id bigint            not null comment ' id',
+    user_id     bigint            not null comment '创建用户 id',
+    create_time datetime          not null comment '创建时间',
+    update_time datetime          not null comment '修改时间',
+    isDelete    tinyint default 0 not null comment '是否删除',
+    index idx_articleId (question_id),
+    index idx_userId (user_id)
+) comment '题目点赞';
+
+create table if not exists question_favour
+(
+    id          bigint auto_increment comment 'id' primary key,
+    question_id bigint            not null comment ' id',
+    user_id     bigint            not null comment '创建用户 id',
+    create_time datetime          not null comment '创建时间',
+    update_time datetime          not null comment '修改时间',
+    isDelete    tinyint default 0 not null comment '是否删除',
+    index idx_questionId (question_id),
+    index idx_userId (user_id)
+) comment '题目收藏';
+
 
