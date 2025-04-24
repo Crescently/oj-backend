@@ -5,7 +5,7 @@ import com.cre.oj.judge.codesandbox.model.ExecuteCodeRequest;
 import com.cre.oj.judge.codesandbox.model.ExecuteCodeResponse;
 import com.cre.oj.model.enums.JudgeInfoMessageEnum;
 import com.cre.oj.model.enums.QuestionSubmitStatusEnum;
-import com.cre.oj.model.request.questionsubmit.JudgeInfo;
+import com.cre.oj.judge.codesandbox.model.JudgeInfo;
 
 /**
  * 示例代码沙箱

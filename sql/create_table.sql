@@ -85,4 +85,16 @@ create table if not exists question_favour
     index idx_userId (user_id)
 ) comment '题目收藏';
 
+create table if not exists comments
+(
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '评论ID',
+    question_id BIGINT            NOT NULL COMMENT '关联的问题ID',
+    user_id     BIGINT            NOT NULL COMMENT '评论用户ID',
+    content     longtext          NOT NULL COMMENT '评论内容',
+    create_time datetime          not null comment '创建时间',
+    update_time datetime          not null comment '修改时间',
+    isDelete    tinyint default 0 not null comment '是否删除',
+    INDEX idx_article_id (question_id)
+) COMMENT = '问题评论表';
+
 

@@ -5,7 +5,7 @@ import com.cre.oj.judge.strategy.JavaLanguageJudgeStrategy;
 import com.cre.oj.judge.strategy.JudgeContext;
 import com.cre.oj.judge.strategy.JudgeStrategy;
 import com.cre.oj.model.entity.QuestionSubmit;
-import com.cre.oj.model.request.questionsubmit.JudgeInfo;
+import com.cre.oj.judge.codesandbox.model.JudgeInfo;
 import org.springframework.stereotype.Service;
 
 /**

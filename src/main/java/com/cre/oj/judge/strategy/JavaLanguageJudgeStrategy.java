@@ -5,7 +5,7 @@ import com.cre.oj.model.entity.Question;
 import com.cre.oj.model.enums.JudgeInfoMessageEnum;
 import com.cre.oj.model.request.question.JudgeCase;
 import com.cre.oj.model.request.question.JudgeConfig;
-import com.cre.oj.model.request.questionsubmit.JudgeInfo;
+import com.cre.oj.judge.codesandbox.model.JudgeInfo;
 
 import java.util.List;
 

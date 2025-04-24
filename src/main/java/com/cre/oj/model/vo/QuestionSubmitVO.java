@@ -2,7 +2,7 @@ package com.cre.oj.model.vo;
 
 import cn.hutool.json.JSONUtil;
 import com.cre.oj.model.entity.QuestionSubmit;
-import com.cre.oj.model.request.questionsubmit.JudgeInfo;
+import com.cre.oj.judge.codesandbox.model.JudgeInfo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;

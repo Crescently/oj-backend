@@ -1,4 +1,4 @@
-package com.cre.oj.model.request.questionsubmit;
+package com.cre.oj.judge.codesandbox.model;
 
 import lombok.Data;
 

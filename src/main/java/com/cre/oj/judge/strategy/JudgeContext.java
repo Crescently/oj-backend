@@ -3,7 +3,7 @@ package com.cre.oj.judge.strategy;
 import com.cre.oj.model.entity.Question;
 import com.cre.oj.model.entity.QuestionSubmit;
 import com.cre.oj.model.request.question.JudgeCase;
-import com.cre.oj.model.request.questionsubmit.JudgeInfo;
+import com.cre.oj.judge.codesandbox.model.JudgeInfo;
 import lombok.Data;
 
 import java.util.List;
