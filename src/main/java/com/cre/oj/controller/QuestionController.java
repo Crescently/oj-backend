@@ -10,11 +10,16 @@ import com.cre.oj.constant.UserConstant;
 import com.cre.oj.exception.BusinessException;
 import com.cre.oj.exception.ThrowUtils;
 import com.cre.oj.model.entity.Question;
+import com.cre.oj.model.entity.QuestionSubmit;
 import com.cre.oj.model.entity.User;
 import com.cre.oj.model.request.question.*;
+import com.cre.oj.model.request.questionsubmit.QuestionSubmitAddRequest;
+import com.cre.oj.model.request.questionsubmit.QuestionSubmitQueryRequest;
 import com.cre.oj.model.vo.QuestionAdminVO;
+import com.cre.oj.model.vo.QuestionSubmitVO;
 import com.cre.oj.model.vo.QuestionVO;
 import com.cre.oj.service.QuestionService;
+import com.cre.oj.service.QuestionSubmitService;
 import com.cre.oj.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +42,9 @@ public class QuestionController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private QuestionSubmitService questionSubmitService;
 
 
     /**
@@ -163,7 +171,7 @@ public class QuestionController {
     /**
      * 分页获取列表（仅管理员）
      */
-    @PostMapping("/list/page")
+    @PostMapping("/list/page/question")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest) {
         long current = questionQueryRequest.getCurrent();
@@ -175,32 +183,34 @@ public class QuestionController {
     /**
      * 分页获取列表（封装类）
      */
-    @PostMapping("/list/page/vo")
-    public BaseResponse<Page<QuestionVO>> listQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,HttpServletRequest request) {
+    @PostMapping("/list/page/question/vo")
+    public BaseResponse<Page<QuestionVO>> listQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest, HttpServletRequest request) {
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
         // 限制爬虫
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         Page<Question> questionPage = questionService.page(new Page<>(current, size), questionService.getQueryWrapper(questionQueryRequest));
-        return BaseResponse.success(questionService.getQuestionVOPage(questionPage,request));
+        return BaseResponse.success(questionService.getQuestionVOPage(questionPage, request));
     }
 
     /**
-     * 分页获取当前用户创建的资源列表
+     * 分页获取当前用户做题历史的资源列表
      */
-    @PostMapping("/my/list/page/vo")
+    @PostMapping("/my/list/page/question/vo")
     public BaseResponse<Page<QuestionVO>> listMyQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest, HttpServletRequest request) {
         if (questionQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
-        questionQueryRequest.setUserId(loginUser.getId());
+        QuestionSubmitQueryRequest questionSubmitQueryRequest = new QuestionSubmitQueryRequest();
+        questionSubmitQueryRequest.setUserId(loginUser.getId());
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
         // 限制爬虫
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
-        Page<Question> questionPage = questionService.page(new Page<>(current, size), questionService.getQueryWrapper(questionQueryRequest));
-        return BaseResponse.success(questionService.getQuestionVOPage(questionPage,request));
+        // 获取当前用户的提交记录
+        Page<QuestionSubmit> questionSubmitPage = questionSubmitService.page(new Page<>(current, size), questionSubmitService.getQueryWrapper(questionSubmitQueryRequest));
+        return BaseResponse.success(questionService.getHistoryQuestionVOPage(questionSubmitPage, request));
     }
 
     /**
@@ -238,6 +248,34 @@ public class QuestionController {
         }
         boolean result = questionService.updateById(question);
         return BaseResponse.success(result);
+    }
+
+    /**
+     * 提交题目
+     */
+    @PostMapping("/submit")
+    public BaseResponse<Long> doQuestionSubmit(@RequestBody QuestionSubmitAddRequest questionSubmitAddRequest, HttpServletRequest request) {
+        if (questionSubmitAddRequest == null || questionSubmitAddRequest.getQuestionId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 登录才能点赞
+        final User loginUser = userService.getLoginUser(request);
+        long questionSubmitId = questionSubmitService.doQuestionSubmit(questionSubmitAddRequest, loginUser);
+        return BaseResponse.success(questionSubmitId);
+    }
+
+    /**
+     * 分页获取列表（封装类）
+     */
+    @PostMapping("/list/page/submit")
+    public BaseResponse<Page<QuestionSubmitVO>> listQuestionSubmitVOByPage(@RequestBody QuestionSubmitQueryRequest questionQueryRequest, HttpServletRequest request) {
+        long current = questionQueryRequest.getCurrent();
+        long size = questionQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        final User loginUser = userService.getLoginUser(request);
+        Page<QuestionSubmit> questionPage = questionSubmitService.page(new Page<>(current, size), questionSubmitService.getQueryWrapper(questionQueryRequest));
+        return BaseResponse.success(questionSubmitService.getQuestionSubmitVOPage(questionPage, loginUser));
     }
 
 }

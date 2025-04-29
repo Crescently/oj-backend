@@ -1,8 +1,10 @@
 package com.cre.oj.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cre.oj.common.BaseResponse;
 import com.cre.oj.common.ErrorCode;
 import com.cre.oj.exception.BusinessException;
+import com.cre.oj.model.entity.Comment;
 import com.cre.oj.model.entity.User;
 import com.cre.oj.model.request.comment.CommentAddRequest;
 import com.cre.oj.model.request.comment.CommentQueryRequest;
@@ -16,8 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/comment")
@@ -41,12 +41,11 @@ public class CommentController {
     }
 
 
-    @PostMapping("/list")
-    public BaseResponse<List<CommentVO>> listCommentById(@RequestBody CommentQueryRequest commentQueryRequest) {
-        if (commentQueryRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        List<CommentVO> commentList = commentService.listCommentById(commentQueryRequest);
-        return BaseResponse.success(commentList);
+    @PostMapping("/list/page/vo")
+    public BaseResponse<Page<CommentVO>> listCommentVOByPage(@RequestBody CommentQueryRequest commentQueryRequest, HttpServletRequest request) {
+        long current = commentQueryRequest.getCurrent();
+        long size = commentQueryRequest.getPageSize();
+        Page<Comment> commentPage = commentService.page(new Page<>(current, size), commentService.getQueryWrapper(commentQueryRequest));
+        return BaseResponse.success(commentService.getCommentVOPage(commentPage, request));
     }
 }

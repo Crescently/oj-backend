@@ -11,10 +11,7 @@ import com.cre.oj.exception.ThrowUtils;
 import com.cre.oj.mapper.QuestionFavourMapper;
 import com.cre.oj.mapper.QuestionMapper;
 import com.cre.oj.mapper.QuestionThumbMapper;
-import com.cre.oj.model.entity.Question;
-import com.cre.oj.model.entity.QuestionFavour;
-import com.cre.oj.model.entity.QuestionThumb;
-import com.cre.oj.model.entity.User;
+import com.cre.oj.model.entity.*;
 import com.cre.oj.model.request.question.QuestionQueryRequest;
 import com.cre.oj.model.vo.QuestionVO;
 import com.cre.oj.model.vo.UserVO;
@@ -23,6 +20,7 @@ import com.cre.oj.service.UserService;
 import com.cre.oj.utils.SqlUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -37,6 +35,7 @@ import java.util.stream.Collectors;
  * @author Crescentlymon
  */
 @Service
+@Slf4j
 public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> implements QuestionService {
 
     @Resource
@@ -157,6 +156,34 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
         return questionVO;
     }
+
+    public Page<QuestionVO> getHistoryQuestionVOPage(Page<QuestionSubmit> questionSubmitPage, HttpServletRequest request) {
+        List<QuestionSubmit> questionSubmitList = questionSubmitPage.getRecords();
+        Page<QuestionVO> questionVOPage = new Page<>(questionSubmitPage.getCurrent(), questionSubmitPage.getSize(), questionSubmitPage.getTotal());
+        if (CollUtil.isEmpty(questionSubmitList)) {
+            return questionVOPage;
+        }
+        // 1. 关联查询题目信息
+        Set<Long> questionIdSet = questionSubmitList.stream().map(QuestionSubmit::getQuestionId).collect(Collectors.toSet());
+        List<Question> questionList = this.listByIds(questionIdSet);
+        // 2. 获取每到题目对应的创建者的用户信息
+        Set<Long> userIdSet = questionList.stream().map(Question::getUserId).collect(Collectors.toSet());
+        Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream().collect(Collectors.groupingBy(User::getId));
+        // 3. 填充数据
+        List<QuestionVO> questionVOList = questionList.stream().map(question -> {
+            QuestionVO questionVO = QuestionVO.objToVo(question);
+            Long userId = question.getUserId();
+            User user = null;
+            if (userIdUserListMap.containsKey(userId)) {
+                user = userIdUserListMap.get(userId).get(0);
+            }
+            questionVO.setUserVO(userService.getUserVO(user));
+            return questionVO;
+        }).collect(Collectors.toList());
+        questionVOPage.setRecords(questionVOList);
+        return questionVOPage;
+    }
+
 
     @Override
     public Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage, HttpServletRequest request) {

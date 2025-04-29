@@ -8,12 +8,13 @@ import com.cre.oj.judge.codesandbox.CodeSandboxFactory;
 import com.cre.oj.judge.codesandbox.CodeSandboxProxy;
 import com.cre.oj.judge.codesandbox.model.ExecuteCodeRequest;
 import com.cre.oj.judge.codesandbox.model.ExecuteCodeResponse;
+import com.cre.oj.judge.codesandbox.model.JudgeInfo;
 import com.cre.oj.judge.strategy.JudgeContext;
 import com.cre.oj.model.entity.Question;
 import com.cre.oj.model.entity.QuestionSubmit;
+import com.cre.oj.model.enums.JudgeInfoMessageEnum;
 import com.cre.oj.model.enums.QuestionSubmitStatusEnum;
 import com.cre.oj.model.request.question.JudgeCase;
-import com.cre.oj.judge.codesandbox.model.JudgeInfo;
 import com.cre.oj.service.QuestionService;
 import com.cre.oj.service.QuestionSubmitService;
 import jakarta.annotation.Resource;
@@ -77,7 +78,7 @@ public class JudgeServiceImpl implements JudgeService {
         //先判断沙箱执行的结果输出数量是否和预期输出数量相等
         List<String> outputList = executeCodeResponse.getOutputList();
         //5.根据沙箱的执行结果，设置题目的判题状态和信息
-        JudgeContext judgeContext=new JudgeContext();
+        JudgeContext judgeContext = new JudgeContext();
         judgeContext.setJudgeInfo(executeCodeResponse.getJudgeInfo());
         judgeContext.setInputList(inputList);
         judgeContext.setOutputList(outputList);
@@ -85,11 +86,16 @@ public class JudgeServiceImpl implements JudgeService {
         judgeContext.setQuestion(question);
         judgeContext.setQuestionSubmit(questionSubmit);
         JudgeInfo judgeInfo = judgeManager.doJudge(judgeContext);
-        //6.修改数据库中的判题结果
+        // 填充修改数据库的字段
         questionSubmitUpdate = new QuestionSubmit();
         questionSubmitUpdate.setId(questionSubmitId);
-        questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.SUCCESS.getValue());
         questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
+        if (judgeInfo.getMessage().equals(JudgeInfoMessageEnum.ACCEPT.getValue())) {
+            questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.SUCCESS.getValue());
+        } else {
+            questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.FAILED.getValue());
+        }
+        //6.修改数据库中的判题结果
         update = questionSubmitService.updateById(questionSubmitUpdate);
         if (!update) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新错误");
