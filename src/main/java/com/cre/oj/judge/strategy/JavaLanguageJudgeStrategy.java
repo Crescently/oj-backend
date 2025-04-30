@@ -1,11 +1,12 @@
 package com.cre.oj.judge.strategy;
 
 import cn.hutool.json.JSONUtil;
+import com.cre.oj.judge.codesandbox.model.JudgeInfo;
 import com.cre.oj.model.entity.Question;
 import com.cre.oj.model.enums.JudgeInfoMessageEnum;
 import com.cre.oj.model.request.question.JudgeCase;
 import com.cre.oj.model.request.question.JudgeConfig;
-import com.cre.oj.judge.codesandbox.model.JudgeInfo;
+import com.cre.oj.utils.StringUtil;
 
 import java.util.List;
 
@@ -45,7 +46,7 @@ public class JavaLanguageJudgeStrategy implements JudgeStrategy {
         //判断每一项输出和预期输出是否相等
         for (int i = 0; i < judgeCaseList.size(); i++) {
             JudgeCase judgeCase = judgeCaseList.get(i);
-            if (!judgeCase.getOutput().equals(outputList.get(i))) {
+            if (!judgeCase.getOutput().equals(StringUtil.removeInvisibleCharacters(outputList.get(i)))) {
                 judgeInfoMessageEnum = JudgeInfoMessageEnum.WRONG_ANSWER;
                 judgeInfoResponse.setMessage(judgeInfoMessageEnum.getValue());
                 return judgeInfoResponse;
@@ -56,7 +57,7 @@ public class JavaLanguageJudgeStrategy implements JudgeStrategy {
         JudgeConfig judgeConfig = JSONUtil.toBean(judgeConfigStr, JudgeConfig.class);
         Long needMemoryLimit = judgeConfig.getMemoryLimit();
         Long needTimeLimit = judgeConfig.getTimeLimit();
-        if (memory > needMemoryLimit) {
+        if ((memory / 1024L ) > needMemoryLimit) {
             judgeInfoMessageEnum = JudgeInfoMessageEnum.MEMORY_LIMIT_EXCEEDED;
             judgeInfoResponse.setMessage(judgeInfoMessageEnum.getValue());
             return judgeInfoResponse;

@@ -1,10 +1,7 @@
 package com.cre.ojcodesandbox;
 
 import cn.hutool.core.date.StopWatch;
-import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ArrayUtil;
-import com.cre.ojcodesandbox.model.ExecuteCodeRequest;
-import com.cre.ojcodesandbox.model.ExecuteCodeResponse;
 import com.cre.ojcodesandbox.model.ExecuteMessage;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
@@ -17,9 +14,7 @@ import org.springframework.stereotype.Component;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -27,17 +22,6 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
     private static final long TIME_OUT = 5000L;
     private static final Boolean FIRST_INIT = true;
 
-
-    public static void main(String[] args) {
-        JavaDockerCodeSandbox javaDockerCodeSandbox = new JavaDockerCodeSandbox();
-        ExecuteCodeRequest executeCodeRequest = new ExecuteCodeRequest();
-        executeCodeRequest.setInputList(Arrays.asList("1 2", "3 4"));
-        String code = ResourceUtil.readStr("testCode/simpleComputeArgs/Main.java", StandardCharsets.UTF_8);
-        executeCodeRequest.setCode(code);
-        executeCodeRequest.setLanguage("java");
-        ExecuteCodeResponse executeCodeResponse = javaDockerCodeSandbox.executeCode(executeCodeRequest);
-        System.out.println("aaaaaaaaaaaaaaaa" + executeCodeResponse);
-    }
 
     /**
      * 3.创建容器，把文件复制到容器内
@@ -108,10 +92,8 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
                     StreamType streamType = frame.getStreamType();
                     if (StreamType.STDERR.equals(streamType)) {
                         errorMessage[0] = new String(frame.getPayload());
-                        System.out.println("输出错误结果：" + errorMessage[0]);
                     } else {
                         message[0] = new String(frame.getPayload());
-                        System.out.println("输出结果：" + message[0]);
                     }
                     super.onNext(frame);
                 }
@@ -123,7 +105,6 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
             ResultCallback<Statistics> statisticsResultCallback = statsCmd.exec(new ResultCallback<Statistics>() {
                 @Override
                 public void onNext(Statistics statistics) {
-                    System.out.println("内存占用：" + statistics.getMemoryStats().getUsage());
                     maxMemory[0] = Math.max(statistics.getMemoryStats().getUsage(), maxMemory[0]);
                 }
 
