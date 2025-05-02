@@ -1,6 +1,6 @@
 package com.cre.ojcodesandbox.controller;
 
-import com.cre.ojcodesandbox.JavaDockerCodeSandbox;
+import com.cre.ojcodesandbox.javasandbox.JavaDockerCodeSandbox;
 import com.cre.ojcodesandbox.model.ExecuteCodeRequest;
 import com.cre.ojcodesandbox.model.ExecuteCodeResponse;
 import lombok.extern.slf4j.Slf4j;

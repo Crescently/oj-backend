@@ -1,7 +1,10 @@
-package com.cre.ojcodesandbox;
+package com.cre.ojcodesandbox.cppcodesandbox;
 
 import cn.hutool.core.date.StopWatch;
+import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ArrayUtil;
+import com.cre.ojcodesandbox.model.ExecuteCodeRequest;
+import com.cre.ojcodesandbox.model.ExecuteCodeResponse;
 import com.cre.ojcodesandbox.model.ExecuteMessage;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
@@ -14,14 +17,27 @@ import org.springframework.stereotype.Component;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
+public class CppDockerCodeSandbox extends CppCodeSandboxTemplate {
+
     private static final long TIME_OUT = 5000L;
     private static final Boolean FIRST_INIT = true;
 
+    public static void main(String[] args) {
+        CppDockerCodeSandbox cppDockerCodeSandbox = new CppDockerCodeSandbox();
+        ExecuteCodeRequest executeCodeRequest = new ExecuteCodeRequest();
+        executeCodeRequest.setInputList(Arrays.asList("1 2", "3 4"));
+        String code = ResourceUtil.readStr("testCode/simpleComputeArgs/Main.cpp", StandardCharsets.UTF_8);
+        executeCodeRequest.setCode(code);
+        executeCodeRequest.setLanguage("cpp");
+        ExecuteCodeResponse executeCodeResponse = cppDockerCodeSandbox.executeCode(executeCodeRequest);
+        System.out.println(executeCodeResponse);
+    }
 
     /**
      * 3.创建容器，把文件复制到容器内
@@ -29,11 +45,10 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
     @Override
     public List<ExecuteMessage> runFile(File userCodeFile, List<String> inputList) {
         String userCodeParentPath = userCodeFile.getParentFile().getAbsolutePath();
-
         //获取默认的Docker Client
         DockerClient dockerClient = DockerClientBuilder.getInstance().build();
         //拉取镜像
-        String image = "openjdk:8-alpine";
+        String image = "gcc:7.5.0";
         if (FIRST_INIT) {
             PullImageCmd pullImageCmd = dockerClient.pullImageCmd(image);
             PullImageResultCallback pullImageResultCallback = new PullImageResultCallback() {
@@ -61,7 +76,6 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
         CreateContainerResponse createContainerResponse = containerCmd.withHostConfig(hostConfig).withNetworkDisabled(true).withReadonlyRootfs(true).withAttachStdin(true).withAttachStderr(true).withAttachStdout(true).withTty(true).exec();
         System.out.println(createContainerResponse);
         String containerId = createContainerResponse.getId();
-        //docker exec name java -cp /app Main 1 3
         //启动容器
         dockerClient.startContainerCmd(containerId).exec();
         //执行命令并获取结果
@@ -69,7 +83,7 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
         for (String inputArgs : inputList) {
             StopWatch stopWatch = new StopWatch();
             String[] inputArgsArray = inputArgs.split(" ");
-            String[] cmdArray = ArrayUtil.append(new String[]{"java", "-cp", "/app", "Main"}, inputArgsArray);
+            String[] cmdArray = ArrayUtil.append(new String[]{"/app/Main"}, inputArgsArray);
             ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId).withCmd(cmdArray).withAttachStderr(true).withAttachStdin(true).withAttachStdout(true).exec();
             System.out.println("创建执行命令：" + execCreateCmdResponse);
             ExecuteMessage executeMessage = new ExecuteMessage();
@@ -129,7 +143,6 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
                 }
             });
             statsCmd.exec(statisticsResultCallback);
-
             try {
                 stopWatch.start();
                 dockerClient.execStartCmd(execId).exec(execStartResultCallback).awaitCompletion();
@@ -148,5 +161,4 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
         }
         return executeMessageList;
     }
-
 }

@@ -1,4 +1,4 @@
-package com.cre.ojcodesandbox;
+package com.cre.ojcodesandbox.javasandbox;
 
 import com.cre.ojcodesandbox.model.ExecuteCodeRequest;
 import com.cre.ojcodesandbox.model.ExecuteCodeResponse;

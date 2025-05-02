@@ -47,17 +47,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    @Override
-    public User getUser(String userAccount) {
-        // 查询数据库，根据用户名获取用户信息
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_account", userAccount);
-        User user = userMapper.selectOne(wrapper);
-        if (user == null) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, MessageConstant.USERNAME_NOT_EXIST);
-        }
-        return user;
-    }
 
     @Override
     public void register(UserRegisterRequest userRegisterRequest) {

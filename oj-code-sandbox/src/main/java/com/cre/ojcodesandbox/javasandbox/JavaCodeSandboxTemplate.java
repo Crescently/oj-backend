@@ -1,7 +1,8 @@
-package com.cre.ojcodesandbox;
+package com.cre.ojcodesandbox.javasandbox;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import com.cre.ojcodesandbox.CodeSandbox;
 import com.cre.ojcodesandbox.model.ExecuteCodeRequest;
 import com.cre.ojcodesandbox.model.ExecuteCodeResponse;
 import com.cre.ojcodesandbox.model.ExecuteMessage;

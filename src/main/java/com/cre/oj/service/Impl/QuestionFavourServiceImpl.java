@@ -39,14 +39,6 @@ public class QuestionFavourServiceImpl extends ServiceImpl<QuestionFavourMapper,
     @Resource
     private QuestionService questionService;
 
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private QuestionFavourMapper questionFavourMapper;
-
-    @Resource
-    private QuestionThumbMapper questionThumbMapper;
 
 
     /**

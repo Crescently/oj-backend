@@ -22,8 +22,6 @@ public class ProcessUtils {
      */
     public static ExecuteMessage runProcessAndGetMessage(Process runProcess, String opName){
         ExecuteMessage executeMessage=new ExecuteMessage();
-
-
         try{
             StopWatch stopWatch=new StopWatch();
             stopWatch.start();
@@ -81,8 +79,6 @@ public class ProcessUtils {
      */
     public static ExecuteMessage runInteractProcessAndGetMessage(Process runProcess,String args){
         ExecuteMessage executeMessage=new ExecuteMessage();
-
-
         try {
             //向控制台输入程序
             OutputStream outputStream = runProcess.getOutputStream();

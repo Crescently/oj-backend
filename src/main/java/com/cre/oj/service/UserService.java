@@ -16,10 +16,6 @@ import com.cre.oj.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface UserService extends IService<User> {
-    /**
-     * 根据用户账号获取用户信息
-     */
-    User getUser(String userAccount);
 
     /**
      * 用户注册

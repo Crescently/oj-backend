@@ -55,7 +55,7 @@ public class UserController {
         String userPassword = userLoginRequest.getUserPassword();
 
         // 判断用户是否处于封禁状态
-        User user = userService.getUser(userAccount);
+        User user = userService.getLoginUser(request);
         if (Objects.equals(user.getUserRole(), UserRoleEnum.BAN.getValue())) {
             throw new BusinessException(ErrorCode.FORBIDDEN_ERROR);
         }
