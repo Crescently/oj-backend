@@ -158,6 +158,13 @@ public class PythonDockerCodeSandbox extends PythonCodeSandboxTemplate {
             executeMessage.setTime(time);
             executeMessage.setMemory(maxMemory[0]);
             executeMessageList.add(executeMessage);
+            // 删除容器
+            try {
+                dockerClient.stopContainerCmd(containerId).exec();
+                dockerClient.removeContainerCmd(containerId).exec();
+            } catch (Exception e) {
+                System.out.println("容器清理失败：" + e.getMessage());
+            }
         }
         return executeMessageList;
     }
