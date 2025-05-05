@@ -10,7 +10,9 @@ import com.cre.oj.exception.BusinessException;
 import com.cre.oj.exception.ThrowUtils;
 import com.cre.oj.mapper.QuestionFavourMapper;
 import com.cre.oj.mapper.QuestionMapper;
+import com.cre.oj.mapper.QuestionSubmitMapper;
 import com.cre.oj.mapper.QuestionThumbMapper;
+import com.cre.oj.model.dto.QuestionStatDTO;
 import com.cre.oj.model.entity.*;
 import com.cre.oj.model.request.question.QuestionQueryRequest;
 import com.cre.oj.model.vo.QuestionVO;
@@ -24,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +49,12 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
     @Resource
     private QuestionThumbMapper questionThumbMapper;
+
+    @Resource
+    private QuestionSubmitMapper questionSubmitMapper;
+
+    @Resource
+    private QuestionMapper questionMapper;
 
     /**
      * 校验题目合法
@@ -227,6 +236,22 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         }).collect(Collectors.toList());
         questionVOPage.setRecords(questionVOList);
         return questionVOPage;
+    }
+
+    @Transactional
+    public void updateSubmitAndAcceptedNum() {
+        List<QuestionStatDTO> submitStats = questionSubmitMapper.countTotalSubmissions();
+        List<QuestionStatDTO> acceptedStats = questionSubmitMapper.countAcceptedSubmissions();
+
+        Map<Long, Integer> acceptedMap = acceptedStats.stream().collect(Collectors.toMap(QuestionStatDTO::getQuestionId, QuestionStatDTO::getCount));
+
+        for (QuestionStatDTO submitStat : submitStats) {
+            Long questionId = submitStat.getQuestionId();
+            Integer submitCount = submitStat.getCount();
+            Integer acceptedCount = acceptedMap.getOrDefault(questionId, 0);
+
+            questionMapper.updateSubmitAndAcceptedNum(questionId, submitCount, acceptedCount);
+        }
     }
 }
 

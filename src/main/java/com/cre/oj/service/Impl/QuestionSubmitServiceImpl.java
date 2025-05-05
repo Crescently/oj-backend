@@ -28,7 +28,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -128,7 +130,20 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         if (CollUtil.isEmpty(questionSubmitList)) {
             return questionSubmitVOPage;
         }
-        List<QuestionSubmitVO> questionSubmitVOList = questionSubmitList.stream().map(questionSubmit -> getQuestionSubmitVO(questionSubmit, loginUser)).collect(Collectors.toList());
+        Set<Long> questionIdSet = questionSubmitList.stream().map(QuestionSubmit::getQuestionId).collect(Collectors.toSet());
+        Map<Long, List<Question>> questionIdQuestionListMap = questionService.listByIds(questionIdSet).stream().collect(Collectors.groupingBy(Question::getId));
+        // 3. 填充数据
+        List<QuestionSubmitVO> questionSubmitVOList = questionSubmitList.stream().map(questionSubmit -> {
+            QuestionSubmitVO questionSubmitVO = getQuestionSubmitVO(questionSubmit, loginUser);
+            Long questionId = questionSubmit.getQuestionId();
+            Question question = null;
+            if (questionIdQuestionListMap.containsKey(questionId)) {
+                question = questionIdQuestionListMap.get(questionId).get(0);
+            }
+            questionSubmitVO.setQuestionVO(questionService.getQuestionVO(question));
+            return questionSubmitVO;
+        }).collect(Collectors.toList());
+
         questionSubmitVOPage.setRecords(questionSubmitVOList);
         return questionSubmitVOPage;
     }

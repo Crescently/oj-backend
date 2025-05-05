@@ -97,4 +97,24 @@ create table if not exists comments
     INDEX idx_article_id (question_id)
 ) COMMENT = '问题评论表';
 
+create table if not exists user_sign_in
+(
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id     BIGINT            NOT NULL COMMENT '用户ID',
+    sign_date   datetime              NOT NULL COMMENT '签到时间',
+    create_time datetime          not null comment '创建时间',
+    update_time datetime          not null comment '修改时间',
+    isDelete    tinyint default 0 not null comment '是否删除',
+    UNIQUE KEY uniq_user_date (user_id, sign_date)
+) COMMENT = '用户签到表';
+
+INSERT INTO user_sign_in (user_id, sign_date)
+VALUES
+    (1914572681258897409, '2025-05-01 10:00:00'),
+    (1914572681258897409, '2025-05-02 09:30:00'),
+    (1914572681258897409, '2025-05-03 08:45:00'),
+    (1914572681258897409, '2025-05-04 11:20:00'),
+    (1914572681258897409, '2025-05-05 07:55:00');
+
+
 
