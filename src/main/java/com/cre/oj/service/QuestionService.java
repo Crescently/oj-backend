@@ -33,4 +33,6 @@ public interface QuestionService extends IService<Question> {
     Page<QuestionVO> getHistoryQuestionVOPage(Page<QuestionSubmit> questionSubmitPage, HttpServletRequest request);
 
     void updateSubmitAndAcceptedNum();
+
+    String getQuestionAnswerById(Long id, HttpServletRequest request);
 }

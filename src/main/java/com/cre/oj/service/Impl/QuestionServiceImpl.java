@@ -253,6 +253,26 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
             questionMapper.updateSubmitAndAcceptedNum(questionId, submitCount, acceptedCount);
         }
     }
+
+    @Override
+    public String getQuestionAnswerById(Long questionId, HttpServletRequest request) {
+        User user = userService.getLoginUser(request);
+        // 根据id查看该是否用户提交过
+        QueryWrapper<QuestionSubmit> queryWrapper = new QueryWrapper<>();
+        log.info("问题ID：{}", questionId);
+        queryWrapper.eq("question_id", questionId);
+        queryWrapper.eq("user_id", user.getId());
+        Long count = questionSubmitMapper.selectCount(queryWrapper);
+        // 若用户提交过或用户是管理员，则获取问题答案
+        if (count == 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "您未作答过该题目");
+        }
+        if (!userService.isAdmin(user)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        Question question = questionMapper.selectById(questionId);
+        return question.getAnswer();
+    }
 }
 
 

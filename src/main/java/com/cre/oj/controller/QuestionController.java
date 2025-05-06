@@ -278,4 +278,9 @@ public class QuestionController {
         return BaseResponse.success(questionSubmitService.getQuestionSubmitVOPage(questionPage, loginUser));
     }
 
+    @PostMapping("/get/answer")
+    public BaseResponse<String> getQuestionAnswerById(Long id, HttpServletRequest request) {
+        String answer = questionService.getQuestionAnswerById(id, request);
+        return BaseResponse.success(answer);
+    }
 }
