@@ -144,12 +144,12 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
                 }
             });
             statsCmd.exec(statisticsResultCallback);
-
             try {
                 stopWatch.start();
                 dockerClient.execStartCmd(execId).exec(execStartResultCallback).awaitCompletion();
                 stopWatch.stop();
                 time = stopWatch.getLastTaskTimeMillis();
+                Thread.sleep(600); // 等待300ms
                 statsCmd.close();
             } catch (InterruptedException e) {
                 System.out.println("程序执行异常");
@@ -160,13 +160,6 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
             executeMessage.setTime(time);
             executeMessage.setMemory(maxMemory[0]);
             executeMessageList.add(executeMessage);
-            // 删除容器
-            try {
-                dockerClient.stopContainerCmd(containerId).exec();
-                dockerClient.removeContainerCmd(containerId).exec();
-            } catch (Exception e) {
-                System.out.println("容器清理失败：" + e.getMessage());
-            }
         }
         return executeMessageList;
     }

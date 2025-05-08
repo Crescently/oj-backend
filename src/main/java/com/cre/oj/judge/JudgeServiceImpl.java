@@ -90,7 +90,7 @@ public class JudgeServiceImpl implements JudgeService {
         questionSubmitUpdate = new QuestionSubmit();
         questionSubmitUpdate.setId(questionSubmitId);
         questionSubmitUpdate.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
-        if (judgeInfo.getMessage().equals(JudgeInfoMessageEnum.ACCEPT.getValue())) {
+        if (judgeInfo.getMessage().equals(JudgeInfoMessageEnum.ACCEPT.getText())) {
             questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.SUCCESS.getValue());
         } else {
             questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.FAILED.getValue());
