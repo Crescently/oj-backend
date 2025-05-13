@@ -3,6 +3,7 @@ package com.cre.oj.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cre.oj.model.dto.QuestionStatDTO;
 import com.cre.oj.model.entity.QuestionSubmit;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public interface QuestionSubmitMapper extends BaseMapper<QuestionSubmit> {
             "FROM question_submit WHERE isDelete = 0 AND status = 2 GROUP BY question_id")
     List<QuestionStatDTO> countAcceptedSubmissions();
 
+    int countDistinctQuestionsByUserId(@Param("userId") Long userId);
 }
 
 

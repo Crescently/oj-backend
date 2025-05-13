@@ -8,7 +8,7 @@ use my_oj;
 create table user
 (
     id            BIGINT primary key comment 'ID',
-    user_account  varchar(20)            not null unique comment '账号',
+    user_account  varchar(20)            not null comment '账号',
     user_password varchar(32) comment '密码',
     username      varchar(10)  default '' comment '用户名',
     user_role     varchar(10)  default '' comment '用户权限',
@@ -101,20 +101,65 @@ create table if not exists user_sign_in
 (
     id          BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id     BIGINT            NOT NULL COMMENT '用户ID',
-    sign_date   datetime              NOT NULL COMMENT '签到时间',
+    sign_date   datetime          NOT NULL COMMENT '签到时间',
     create_time datetime          not null comment '创建时间',
     update_time datetime          not null comment '修改时间',
     isDelete    tinyint default 0 not null comment '是否删除',
     UNIQUE KEY uniq_user_date (user_id, sign_date)
 ) COMMENT = '用户签到表';
 
-INSERT INTO user_sign_in (user_id, sign_date)
-VALUES
-    (1914572681258897409, '2025-05-01 10:00:00'),
-    (1914572681258897409, '2025-05-02 09:30:00'),
-    (1914572681258897409, '2025-05-03 08:45:00'),
-    (1914572681258897409, '2025-05-04 11:20:00'),
-    (1914572681258897409, '2025-05-05 07:55:00');
+create table if not exists post
+(
+    id          bigint auto_increment comment 'id' primary key,
+    title       varchar(512)      null comment '标题',
+    content     text              null comment '内容',
+    tags        varchar(1024)     null comment '标签列表（json 数组）',
+    thumb_num   int     default 0 not null comment '点赞数',
+    favour_num  int     default 0 not null comment '收藏数',
+    view_count  int     default 0 comment '浏览量',
+    user_id     bigint            not null comment '创建用户 id',
+    create_time datetime          not null comment '创建时间',
+    update_time datetime          not null comment '修改时间',
+    isDelete    tinyint default 0 not null comment '是否删除',
+    index idx_userId (user_id)
+) comment '帖子';
+
+create table if not exists post_thumb
+(
+    id          bigint auto_increment comment 'id' primary key,
+    post_id     bigint            not null comment '帖子 id',
+    user_id     bigint            not null comment '创建用户 id',
+    create_time datetime          not null comment '创建时间',
+    update_time datetime          not null comment '修改时间',
+    isDelete    tinyint default 0 not null comment '是否删除',
+    index idx_postId (post_id),
+    index idx_userId (user_id)
+) comment '帖子点赞';
+
+create table if not exists post_favour
+(
+    id          bigint auto_increment comment 'id' primary key,
+    post_id     bigint            not null comment '帖子 id',
+    user_id     bigint            not null comment '创建用户 id',
+    create_time datetime          not null comment '创建时间',
+    update_time datetime          not null comment '修改时间',
+    isDelete    tinyint default 0 not null comment '是否删除',
+    index idx_postId (post_id),
+    index idx_userId (user_id)
+) comment '帖子收藏';
+
+create table if not exists post_comment
+(
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '评论ID',
+    post_id     BIGINT            NOT NULL COMMENT '所属文章ID',
+    user_id     BIGINT            NOT NULL COMMENT '评论者ID',
+    content     TEXT              NOT NULL COMMENT '评论内容',
+    create_time datetime          not null comment '创建时间',
+    update_time datetime          not null comment '修改时间',
+    isDelete    tinyint default 0 not null comment '是否删除'
+) comment '帖子评论';
+
+
 
 
 

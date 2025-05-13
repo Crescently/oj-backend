@@ -210,7 +210,7 @@ public class QuestionController {
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         // 获取当前用户的提交记录
         Page<QuestionSubmit> questionSubmitPage = questionSubmitService.page(new Page<>(current, size), questionSubmitService.getQueryWrapper(questionSubmitQueryRequest));
-        return BaseResponse.success(questionService.getHistoryQuestionVOPage(questionSubmitPage, request));
+        return BaseResponse.success(questionService.getHistoryQuestionVOPage(questionSubmitPage, loginUser.getId()));
     }
 
     /**
