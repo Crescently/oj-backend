@@ -8,7 +8,6 @@ import com.cre.oj.model.request.question.JudgeCase;
 import com.cre.oj.model.request.question.JudgeConfig;
 import com.cre.oj.utils.StringUtil;
 
-
 import java.util.List;
 
 /**
@@ -29,7 +28,9 @@ public class PythonLanguageJudgeStrategy implements JudgeStrategy {
         List<JudgeCase> judgeCaseList = judgeContext.getJudgeCaseList();
         JudgeInfoMessageEnum judgeInfoMessageEnum = JudgeInfoMessageEnum.ACCEPT;
         JudgeInfo judgeInfoResponse = new JudgeInfo();
-        judgeInfoResponse.setMemory(memory / 1024L);
+        if (memory != null) {
+            judgeInfoResponse.setMemory(memory / 1024L);
+        }
         judgeInfoResponse.setTime(time);
         //先判断沙箱执行的结果输出数量是否和预期输出数量相等
         if (outputList.size() != inputList.size()) {
@@ -51,12 +52,22 @@ public class PythonLanguageJudgeStrategy implements JudgeStrategy {
         JudgeConfig judgeConfig = JSONUtil.toBean(judgeConfigStr, JudgeConfig.class);
         Long needMemoryLimit = judgeConfig.getMemoryLimit();
         Long needTimeLimit = judgeConfig.getTimeLimit();
+        if (memory == null) {
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.MEMORY_EXCEPTION;
+            judgeInfoResponse.setMessage(judgeInfoMessageEnum.getText());
+            return judgeInfoResponse;
+        }
         if (((memory / 1024L) / 3) > needMemoryLimit) {
             judgeInfoMessageEnum = JudgeInfoMessageEnum.MEMORY_LIMIT_EXCEEDED;
             judgeInfoResponse.setMessage(judgeInfoMessageEnum.getText());
             return judgeInfoResponse;
         }
         long PYTHON_PROGRAM_TIME_COST = 1500L;
+        if (time == null) {
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED;
+            judgeInfoResponse.setMessage(judgeInfoMessageEnum.getText());
+            return judgeInfoResponse;
+        }
         if ((time - PYTHON_PROGRAM_TIME_COST) > needTimeLimit) {
             judgeInfoMessageEnum = JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED;
             judgeInfoResponse.setMessage(judgeInfoMessageEnum.getText());

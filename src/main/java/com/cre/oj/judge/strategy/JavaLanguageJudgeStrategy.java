@@ -34,7 +34,10 @@ public class JavaLanguageJudgeStrategy implements JudgeStrategy {
         JudgeInfoMessageEnum judgeInfoMessageEnum = JudgeInfoMessageEnum.ACCEPT;
 
         JudgeInfo judgeInfoResponse = new JudgeInfo();
-        judgeInfoResponse.setMemory(memory);
+        if (memory != null) {
+            judgeInfoResponse.setMemory(memory / 1024L);
+        }
+        judgeInfoResponse.setMemory(null);
         judgeInfoResponse.setTime(time);
 
         //先判断沙箱执行的结果输出数量是否和预期输出数量相等
@@ -57,13 +60,23 @@ public class JavaLanguageJudgeStrategy implements JudgeStrategy {
         JudgeConfig judgeConfig = JSONUtil.toBean(judgeConfigStr, JudgeConfig.class);
         Long needMemoryLimit = judgeConfig.getMemoryLimit();
         Long needTimeLimit = judgeConfig.getTimeLimit();
-        if ((memory / 1024L ) > needMemoryLimit) {
+        if (memory == null) {
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.MEMORY_EXCEPTION;
+            judgeInfoResponse.setMessage(judgeInfoMessageEnum.getText());
+            return judgeInfoResponse;
+        }
+        if ((memory / 1024L) > needMemoryLimit) {
             judgeInfoMessageEnum = JudgeInfoMessageEnum.MEMORY_LIMIT_EXCEEDED;
             judgeInfoResponse.setMessage(judgeInfoMessageEnum.getValue());
             return judgeInfoResponse;
         }
         //Java程序本身需要额外执行10秒钟
         long JAVA_PROGRAM_TIME_COST = 1000L;
+        if (time == null) {
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED;
+            judgeInfoResponse.setMessage(judgeInfoMessageEnum.getText());
+            return judgeInfoResponse;
+        }
         if ((time - JAVA_PROGRAM_TIME_COST) > needTimeLimit) {
             judgeInfoMessageEnum = JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED;
             judgeInfoResponse.setMessage(judgeInfoMessageEnum.getValue());

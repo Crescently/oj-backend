@@ -51,13 +51,10 @@ public abstract class JavaCodeSandboxTemplate implements CodeSandbox {
         try {
             Process compileProcess = Runtime.getRuntime().exec(compiledCmd);
             ExecuteMessage executeMessage = ProcessUtils.runProcessAndGetMessage(compileProcess, "编译");
-            if (executeMessage.getExitValue() != 0) {
-                throw new RuntimeException("编译错误");
-            }
             return executeMessage;
         } catch (Exception e) {
-//            return getErrorResponse(e);
-            throw new RuntimeException(e);
+            log.error("编译异常", e);
+            return null;
         }
     }
 
@@ -145,24 +142,39 @@ public abstract class JavaCodeSandboxTemplate implements CodeSandbox {
 
     @Override
     public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
-        List<String> inputList = executeCodeRequest.getInputList();
-        String language = executeCodeRequest.getLanguage();
-        String code = executeCodeRequest.getCode();
-        //1.把用户代码保存为文件
-        File userCodeFile = saveCodeToFile(code);
-        //2.编译代码，得到class文件
-        ExecuteMessage compileFileExecuteMessage = compileFile(userCodeFile);
-        //3.执行代码，得到结果
-        List<ExecuteMessage> executeMessageList = runFile(userCodeFile, inputList);
-        //4.收集整理输出的结果
-        ExecuteCodeResponse outputResponse = getOutputResponse(executeMessageList);
-        //5.文件清理
-        boolean b = deleteFile(userCodeFile);
-        if (!b) {
-            log.error("deleteFile error,userCodeFilePath = {}", userCodeFile.getAbsolutePath());
+        File userCodeFile = null;
+        try {
+            List<String> inputList = executeCodeRequest.getInputList();
+            String code = executeCodeRequest.getCode();
+
+            // 1. 保存代码
+            userCodeFile = saveCodeToFile(code);
+
+            // 2. 编译代码
+            ExecuteMessage compileMessage = compileFile(userCodeFile);
+            if (compileMessage == null || compileMessage.getExitValue() != 0) {
+                // 编译失败，构造错误响应
+                return getErrorResponse(new RuntimeException(compileMessage != null ? compileMessage.getErrorMessage() : "编译异常"));
+            }
+
+            // 3. 执行代码
+            List<ExecuteMessage> executeMessages = runFile(userCodeFile, inputList);
+
+            // 4. 收集输出
+            return getOutputResponse(executeMessages);
+        } catch (Exception e) {
+            return getErrorResponse(e);
+        } finally {
+            // 5. 文件清理
+            if (userCodeFile != null) {
+                boolean success = deleteFile(userCodeFile);
+                if (!success) {
+                    log.error("deleteFile error,userCodeFilePath = {}", userCodeFile.getAbsolutePath());
+                }
+            }
         }
-        return outputResponse;
     }
+
 
     /**
      * 获取错误响应

@@ -17,11 +17,13 @@ import com.cre.oj.model.enums.QuestionSubmitStatusEnum;
 import com.cre.oj.model.request.questionsubmit.QuestionSubmitAddRequest;
 import com.cre.oj.model.request.questionsubmit.QuestionSubmitQueryRequest;
 import com.cre.oj.model.vo.QuestionSubmitVO;
+import com.cre.oj.model.vo.UserVO;
 import com.cre.oj.service.QuestionService;
 import com.cre.oj.service.QuestionSubmitService;
 import com.cre.oj.service.UserService;
 import com.cre.oj.utils.SqlUtils;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Lazy;
@@ -120,11 +122,19 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         if (!Objects.equals(userId, questionSubmit.getUserId()) && !userService.isAdmin(loginUser)) {
             questionSubmitVO.setCode(null);
         }
+        // 获取对应的用户信息
+        Long userSubmitId = questionSubmit.getUserId();
+        User user = null;
+        if (userSubmitId != null && userSubmitId > 0) {
+            user = userService.getById(userSubmitId);
+        }
+        UserVO userVO = userService.getUserVO(user);
+        questionSubmitVO.setUserVO(userVO);
         return questionSubmitVO;
     }
 
     @Override
-    public Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> questionSubmitPage, User loginUser) {
+    public Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> questionSubmitPage, User loginUser, HttpServletRequest request) {
         List<QuestionSubmit> questionSubmitList = questionSubmitPage.getRecords();
         Page<QuestionSubmitVO> questionSubmitVOPage = new Page<>(questionSubmitPage.getCurrent(), questionSubmitPage.getSize(), questionSubmitPage.getTotal());
         if (CollUtil.isEmpty(questionSubmitList)) {
@@ -140,7 +150,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
             if (questionIdQuestionListMap.containsKey(questionId)) {
                 question = questionIdQuestionListMap.get(questionId).get(0);
             }
-            questionSubmitVO.setQuestionVO(questionService.getQuestionVO(question));
+            questionSubmitVO.setQuestionVO(questionService.getQuestionVO(question, request));
             return questionSubmitVO;
         }).collect(Collectors.toList());
 

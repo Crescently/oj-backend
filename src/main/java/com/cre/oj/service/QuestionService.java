@@ -18,7 +18,7 @@ public interface QuestionService extends IService<Question> {
     /**
      * 获取问题对象（脱敏）
      */
-    QuestionVO getQuestionVO(Question question);
+    QuestionVO getQuestionVO(Question question, HttpServletRequest request);
 
     /**
      * 获取查询包装类

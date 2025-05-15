@@ -27,17 +27,6 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
     private static final long TIME_OUT = 5000L;
     private static final Boolean FIRST_INIT = true;
 
-    public static void main(String[] args) {
-        JavaDockerCodeSandbox javaDockerCodeSandbox = new JavaDockerCodeSandbox();
-        ExecuteCodeRequest executeCodeRequest=new ExecuteCodeRequest();
-        executeCodeRequest.setInputList(Arrays.asList("1 2","3 4"));
-        String code= ResourceUtil.readStr("testCode/simpleComputeArgs/Main.java", StandardCharsets.UTF_8);
-        executeCodeRequest.setCode(code);
-        executeCodeRequest.setLanguage("java");
-        ExecuteCodeResponse executeCodeResponse=javaDockerCodeSandbox.executeCode(executeCodeRequest);
-        System.out.println(executeCodeResponse);
-    }
-
     /**
      * 3.创建容器，把文件复制到容器内
      */

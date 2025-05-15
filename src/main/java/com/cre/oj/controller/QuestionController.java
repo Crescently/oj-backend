@@ -157,7 +157,7 @@ public class QuestionController {
      * 根据 id 获取 (脱敏)
      */
     @GetMapping("/get/vo")
-    public BaseResponse<QuestionVO> getQuestionVOById(Long id) {
+    public BaseResponse<QuestionVO> getQuestionVOById(Long id, HttpServletRequest request) {
         if (id <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -165,7 +165,7 @@ public class QuestionController {
         if (question == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        return BaseResponse.success(questionService.getQuestionVO(question));
+        return BaseResponse.success(questionService.getQuestionVO(question, request));
     }
 
     /**
@@ -275,7 +275,7 @@ public class QuestionController {
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         final User loginUser = userService.getLoginUser(request);
         Page<QuestionSubmit> questionPage = questionSubmitService.page(new Page<>(current, size), questionSubmitService.getQueryWrapper(questionQueryRequest));
-        return BaseResponse.success(questionSubmitService.getQuestionSubmitVOPage(questionPage, loginUser));
+        return BaseResponse.success(questionSubmitService.getQuestionSubmitVOPage(questionPage, loginUser, request));
     }
 
     @PostMapping("/get/answer")

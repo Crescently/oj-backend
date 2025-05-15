@@ -129,7 +129,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
 
     @Override
-    public QuestionVO getQuestionVO(Question question) {
+    public QuestionVO getQuestionVO(Question question, HttpServletRequest request) {
         QuestionVO questionVO = QuestionVO.objToVo(question);
         long questionId = question.getId();
         // 1. 关联查询用户信息
@@ -141,29 +141,21 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         UserVO userVO = userService.getUserVO(user);
         questionVO.setUserVO(userVO);
 
-        //2. 根据文章id查询当前用户是否收藏
-        QueryWrapper<QuestionFavour> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("question_id", questionId);
-        List<QuestionFavour> questionFavours = questionFavourMapper.selectList(queryWrapper);
-        if (questionFavours.isEmpty()) {
-            questionVO.setFavour(false);
-        } else {
-            for (QuestionFavour questionFavour : questionFavours) {
-                questionVO.setFavour(questionFavour.getUserId().equals(userId));
-            }
+        User loginUser = userService.getLoginUser(request);
+        if (loginUser != null) {
+            //2. 根据文章id查询当前用户是否收藏
+            QueryWrapper<QuestionFavour> questionFavourQueryWrapper = new QueryWrapper<>();
+            questionFavourQueryWrapper.eq("question_id", questionId);
+            questionFavourQueryWrapper.eq("user_id", loginUser.getId());
+            QuestionFavour questionFavours = questionFavourMapper.selectOne(questionFavourQueryWrapper);
+            questionVO.setFavour(questionFavours != null);
+            // 3. 根据文章id查询当前用户是否点赞
+            QueryWrapper<QuestionThumb> questionThumbQueryWrapper = new QueryWrapper<>();
+            questionThumbQueryWrapper.eq("question_id", questionId);
+            questionThumbQueryWrapper.eq("user_id", loginUser.getId());
+            QuestionThumb questionThumbs = questionThumbMapper.selectOne(questionThumbQueryWrapper);
+            questionVO.setThumb(questionThumbs != null);
         }
-        // 3. 根据文章id查询当前用户是否点赞
-        QueryWrapper<QuestionThumb> queryWrapper2 = new QueryWrapper<>();
-        queryWrapper2.eq("question_id", questionId);
-        List<QuestionThumb> questionThumbs = questionThumbMapper.selectList(queryWrapper2);
-        if (questionThumbs.isEmpty()) {
-            questionVO.setThumb(false);
-        } else {
-            for (QuestionThumb questionThumb : questionThumbs) {
-                questionVO.setThumb(questionThumb.getUserId().equals(userId));
-            }
-        }
-
         return questionVO;
     }
 
@@ -262,16 +254,12 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         User user = userService.getLoginUser(request);
         // 根据id查看该是否用户提交过
         QueryWrapper<QuestionSubmit> queryWrapper = new QueryWrapper<>();
-        log.info("问题ID：{}", questionId);
         queryWrapper.eq("question_id", questionId);
         queryWrapper.eq("user_id", user.getId());
         Long count = questionSubmitMapper.selectCount(queryWrapper);
-        // 若用户提交过或用户是管理员，则获取问题答案
-        if (count == 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "您未作答过该题目");
-        }
-        if (!userService.isAdmin(user)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        // 若用户提交过，则获取问题答案
+        if (count == 0 && !userService.isAdmin(user)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "您未作答过该题目，且无权限查看答案");
         }
         Question question = questionMapper.selectById(questionId);
         return question.getAnswer();

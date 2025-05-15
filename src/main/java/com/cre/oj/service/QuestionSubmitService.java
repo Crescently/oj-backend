@@ -8,6 +8,7 @@ import com.cre.oj.model.entity.User;
 import com.cre.oj.model.request.questionsubmit.QuestionSubmitAddRequest;
 import com.cre.oj.model.request.questionsubmit.QuestionSubmitQueryRequest;
 import com.cre.oj.model.vo.QuestionSubmitVO;
+import jakarta.servlet.http.HttpServletRequest;
 
 
 public interface QuestionSubmitService extends IService<QuestionSubmit> {
@@ -30,5 +31,5 @@ public interface QuestionSubmitService extends IService<QuestionSubmit> {
     /**
      * 获取问题提交对象分页（脱敏）
      */
-    Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> questionSubmitPage, User loginUser);
+    Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> questionSubmitPage, User loginUser, HttpServletRequest request);
 }

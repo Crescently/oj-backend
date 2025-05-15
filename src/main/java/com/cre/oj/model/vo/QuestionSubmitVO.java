@@ -1,8 +1,8 @@
 package com.cre.oj.model.vo;
 
 import cn.hutool.json.JSONUtil;
-import com.cre.oj.model.entity.QuestionSubmit;
 import com.cre.oj.judge.codesandbox.model.JudgeInfo;
+import com.cre.oj.model.entity.QuestionSubmit;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -51,6 +51,11 @@ public class QuestionSubmitVO implements Serializable {
     private Long userId;
 
     /**
+     * 该条记录的用户信息
+     */
+    private UserVO userVO;
+
+    /**
      * 创建时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -93,8 +98,8 @@ public class QuestionSubmitVO implements Serializable {
         }
         QuestionSubmitVO questionSubmitVO = new QuestionSubmitVO();
         BeanUtils.copyProperties(questionSubmit, questionSubmitVO);
-        String judgeInfoStr=questionSubmit.getJudgeInfo();
-        questionSubmitVO.setJudgeInfo(JSONUtil.toBean(judgeInfoStr,JudgeInfo.class));
+        String judgeInfoStr = questionSubmit.getJudgeInfo();
+        questionSubmitVO.setJudgeInfo(JSONUtil.toBean(judgeInfoStr, JudgeInfo.class));
         return questionSubmitVO;
     }
 }
